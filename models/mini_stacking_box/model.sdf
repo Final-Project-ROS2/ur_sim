@@ -1,0 +1,39 @@
+<?xml version='1.0'?>
+<sdf version='1.7'>
+  <model name='mini_stacking_box'>
+    <static>false</static>
+
+    <link name='link'>
+        <gravity></gravity>
+        <self_collide>false</self_collide>
+        <inertial>
+            <mass>1.0</mass>
+            <inertia>
+            <ixx>0.166667</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.166667</iyy>
+            <iyz>0</iyz>
+            <izz>0.166667</izz>
+            </inertia>
+            <pose>0 0 0 0 -0 0</pose>
+        </inertial>
+
+        <visual name='visual'>
+            <geometry>
+                <mesh>
+                    <uri>model://mini_stacking_box/meshes/mini_stacking_box.dae</uri>
+                    <scale>1 1 1</scale>
+                </mesh>
+            </geometry>
+            <cast_shadows>1</cast_shadows>
+        </visual>
+
+        <collision name='col_bottom'>
+            <pose>0 0 -0.27 0 0 0</pose>
+            <geometry><box><size>0.50 0.77 0.01</size></box></geometry>
+            <surface><contact><ode/></contact><friction><ode/></friction></surface>
+        </collision>
+    </link>
+  </model>
+</sdf>
