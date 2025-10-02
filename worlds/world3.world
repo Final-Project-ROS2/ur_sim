@@ -819,6 +819,7 @@
           </dynamics>
         </axis>
       </joint>
+      
       <link name='robotiq_85_left_finger_tip_link'>
         <pose relative_to='robotiq_85_left_finger_tip_joint'>0 0 0 0 -0 0</pose>
         <inertial>
@@ -868,6 +869,12 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
+        <sensor name="my_contact" type="contact">
+            <contact>
+              <collision>robotiq_85_left_finger_tip_link_collision</collision>
+            </contact>
+            <update_Rate> 5 </update_rate>
+        </sensor>
       <joint name='robotiq_85_right_inner_knuckle_joint' type='revolute'>
         <pose relative_to='wrist_3_link'>-0.0127 -0 0.06142 0 -0 0</pose>
         <parent>wrist_3_link</parent>
@@ -1529,5 +1536,7 @@
       </camera>
     </gui>
     <plugin name='gazebo_link_attacher' filename='libgazebo_link_attacher.so'/>
+    <plugin name='gazebo_ros_init' filename='libgazebo_ros_init.so'/>
+    <plugin name='gazebo_ros_factory' filename='libgazebo_ros_factory.so'/>
   </world>
 </sdf>
