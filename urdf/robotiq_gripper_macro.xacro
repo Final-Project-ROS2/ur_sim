@@ -204,10 +204,10 @@
                     <contact>
                     <ode>
                         <kp>1e+5</kp>
-                        <kd>1</kd>
+                        <kd>1000000000000</kd>
                         <soft_cfm>0</soft_cfm>
                         <soft_erp>0.2</soft_erp>
-                        <minDepth>0.002</minDepth>
+                        <minDepth>0.003</minDepth>
                         <maxVel>0</maxVel>
                     </ode>
                     </contact>
@@ -219,6 +219,23 @@
                 <inertia ixx="1.048152e-05" iyy="1.197888e-05" izz="4.22784e-06" ixy="0.0" ixz="3.5232e-6" iyz="0.0" />
             </inertial>
         </link>
+        
+        <gazebo reference="${prefix}robotiq_85_left_finger_tip_link">
+            <mu1>1000</mu1>
+            <mu2>1000</mu2>
+            <kp>1000000.0</kp>
+            <kd>1000000000000.0</kd>
+            <slip1>0</slip1>
+            <slip2>0</slip2>
+            <minDepth>0.003</minDepth>
+            <maxVel>0</maxVel>
+            <torsional>
+                <ode>
+                    <coefficient>1000</coefficient>
+                    <slip>0</slip>
+                </ode>
+            </torsional>
+        </gazebo>
 
         <link name="${prefix}robotiq_85_right_finger_tip_link">
             <visual>
@@ -242,10 +259,10 @@
                     <contact>
                     <ode>
                         <kp>1e+5</kp>
-                        <kd>1</kd>
+                        <kd>100000000000</kd>
                         <soft_cfm>0</soft_cfm>
                         <soft_erp>0.2</soft_erp>
-                        <minDepth>0.002</minDepth>
+                        <minDepth>0.003</minDepth>
                         <maxVel>0</maxVel>
                     </ode>
                     </contact>
@@ -257,6 +274,23 @@
                 <inertia ixx="1.048152e-05" iyy="1.197888e-05" izz="4.22784e-06" ixy="0.0" ixz="-3.5232e-06" iyz="0.0" />
             </inertial>
         </link>
+
+        <gazebo reference="${prefix}robotiq_85_right_finger_tip_link">
+            <mu1>1000</mu1>
+            <mu2>1000</mu2>
+            <kp>1000000.0</kp>
+            <kd>10000000000000.0</kd>
+            <slip1>0</slip1>
+            <slip2>0</slip2>
+            <minDepth>0.003</minDepth>
+            <maxVel>0</maxVel>
+            <torsional>
+                <ode>
+                    <coefficient>1000</coefficient>
+                    <slip>0</slip>
+                </ode>
+            </torsional>
+        </gazebo>
 
         <joint name="${prefix}robotiq_85_base_joint" type="fixed">
             <parent link="${parent}" />

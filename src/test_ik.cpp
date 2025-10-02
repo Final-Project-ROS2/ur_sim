@@ -13,6 +13,8 @@ int main(int argc, char **argv)
     // ROS2 Initialization
     rclcpp::init(argc, argv);
     auto node = std::make_shared<rclcpp::Node>("move_group_interface");
+    bool use_sim_time = node->get_parameter("use_sim_time").as_bool();
+    RCLCPP_INFO(node->get_logger(), "Use sim time: %s", use_sim_time ? "true" : "false");
 
     // Logger
     auto logger = rclcpp::get_logger("move_group_interface");
@@ -39,11 +41,12 @@ int main(int argc, char **argv)
     tf2::Quaternion orientation;
     orientation.setRPY(-3.136, 0.000, -1.570);
     target_pose.orientation = tf2::toMsg(orientation);
-    target_pose.position.x = 0.5;
+    target_pose.position.x = 0.495;
     target_pose.position.y = 0.0;
-    target_pose.position.z = 0.384;
+    target_pose.position.z = 0.164;
 
     move_group.setPoseTarget(target_pose, "tool0");
+    // move_group.setApproximateJointValueTarget(target_pose, "tool0");
 
     RCLCPP_INFO(logger, "Planning frame: %s", move_group.getPlanningFrame().c_str());
     RCLCPP_INFO(logger, "End effector link: %s", move_group.getEndEffectorLink().c_str());
