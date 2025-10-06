@@ -1097,7 +1097,7 @@
         <kinematic>0</kinematic>
       </link>
       <static>0</static>
-      <plugin name='gazebo_ros2_control' filename='libgazebo_ros2_control.so'>
+      <plugin name='gz_ros2_control::GazeboSimROS2ControlPlugin' filename='libgz_ros2_control-system.so'>
         <parameters>/home/final-project/ur_yt_ws/install/ur_yt_sim/share/ur_yt_sim/config/ur5_controllers_gripper.yaml</parameters>
       </plugin>
       <pose>0 0 0 0 -0 0</pose>

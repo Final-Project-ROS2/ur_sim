@@ -2,9 +2,10 @@ from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler,
     SetEnvironmentVariable, TimerAction, AppendEnvironmentVariable,
+    ExecuteProcess,
 )
 from launch.conditions import IfCondition, UnlessCondition
-from launch.event_handlers import OnProcessStart
+from launch.event_handlers import OnProcessStart, OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -56,7 +57,7 @@ def generate_launch_description():
     with_octomap  = DeclareLaunchArgument("with_octomap", default_value="true")  # << NEW
     x_arg = DeclareLaunchArgument("x", default_value="0")
     y_arg = DeclareLaunchArgument("y", default_value="0")
-    z_arg = DeclareLaunchArgument("z", default_value="0")
+    z_arg = DeclareLaunchArgument("z", default_value="0.1")
     ld.add_action(with_rviz); ld.add_action(with_octomap)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
 
@@ -95,13 +96,24 @@ def generate_launch_description():
     #     # launch_arguments={"use_sim_time":"true", "gui":"true", "paused":"true"}.items()
     # )
     # ld.add_action(gazebo)
-    gzserver_cmd = IncludeLaunchDescription(
+
+    world = LaunchConfiguration('world')
+
+    world_arg = DeclareLaunchArgument(
+        'world',
+        default_value=world_file,
+        description='Full path to world model file to load'
+    )
+
+    ld.add_action(world_arg)
+
+    gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(ros_gz_sim, "launch", "gz_sim.launch.py")
         ),
-        launch_arguments={'gz_args': '-r -s -v4', 'on_exit_shutdown': 'true'}.items(),
+        launch_arguments={'gz_args': '-r -s -v4 ', 'on_exit_shutdown': 'true'}.items(),
     )
-    ld.add_action(gzserver_cmd)
+    ld.add_action(gazebo)
 
     gzclient_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -125,7 +137,7 @@ def generate_launch_description():
         package="ros_gz_sim",
         executable="create",
         arguments=[
-            "-entity","cobot",
+            "-name","cobot",
             "-topic","robot_description",
             "-x", LaunchConfiguration("x"),
             "-y", LaunchConfiguration("y"),
@@ -135,17 +147,34 @@ def generate_launch_description():
     )
     ld.add_action(TimerAction(period=3.0, actions=[spawn]))
 
-    jsb  = Node(package="controller_manager", executable="spawner",
-                arguments=["joint_state_broadcaster","--controller-manager","/controller_manager"], output="screen")
-    arm  = Node(package="controller_manager", executable="spawner",
-                arguments=["joint_trajectory_controller","--controller-manager","/controller_manager"], output="screen")
-    grip = Node(package="controller_manager", executable="spawner",
-                arguments=["gripper_position_controller","--controller-manager","/controller_manager"], output="screen")
+    # jsb  = Node(package="controller_manager", executable="spawner",
+    #             arguments=["joint_state_broadcaster","--controller-manager","/controller_manager"], output="screen")
+    # arm  = Node(package="controller_manager", executable="spawner",
+    #             arguments=["joint_trajectory_controller","--controller-manager","/controller_manager"], output="screen")
+    # grip = Node(package="controller_manager", executable="spawner",
+    #             arguments=["gripper_position_controller","--controller-manager","/controller_manager"], output="screen")
+    jsb = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'joint_state_broadcaster', '--controller-manager', '/controller_manager'],
+        output='screen'
+    )
+    arm = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'joint_trajectory_controller', '--controller-manager', '/controller_manager'],
+        output='screen'
+    )
+    grip = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'gripper_position_controller', '--controller-manager', '/controller_manager'],
+        output='screen'
+    )
 
+    # ld.add_action(RegisterEventHandler(
+    #     OnProcessStart(target_action=spawn, on_start=[
+    #         TimerAction(period=2.0, actions=[jsb]),
+    #         TimerAction(period=3.0, actions=[arm, grip]),
+    #     ])
+    # ))
     ld.add_action(RegisterEventHandler(
-        OnProcessStart(target_action=spawn, on_start=[
-            TimerAction(period=2.0, actions=[jsb]),
-            TimerAction(period=3.0, actions=[arm, grip]),
+        OnProcessExit(target_action=spawn, on_exit=[
+            jsb, arm, grip
         ])
     ))
 

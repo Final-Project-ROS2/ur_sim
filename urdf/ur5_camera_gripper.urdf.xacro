@@ -140,9 +140,17 @@
     <!-- Gazebo plugins -->
     <gazebo reference="world">
     </gazebo>
-    <gazebo>
+    <!-- <gazebo>
       <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
         <parameters>$(arg simulation_controllers)</parameters>
+      </plugin>
+    </gazebo> -->
+    <gazebo>
+      <plugin filename="gz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <robot_param>robot_description</robot_param>
+        <robot_param_node>robot_state_publisher</robot_param_node>
+        <parameters>/home/final-project/ur_yt_ws/src/ur_yt_sim/config/ur5_controllers_gripper.yaml</parameters>
+        <controller_manager_name>controller_manager</controller_manager_name>
       </plugin>
     </gazebo>
 
