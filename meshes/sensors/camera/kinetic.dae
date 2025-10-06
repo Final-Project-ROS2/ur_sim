@@ -9,11 +9,11 @@
         <created>Wed Jan 16 14:35:13 2013</created>
         <modified>Wed Jan 16 14:35:13 2013</modified>
     </asset>
-    <library_images>
+    <!-- <library_images>
         <image id="texture0" name="texture0">
             <init_from>xtion_pro_live.png</init_from>
         </image>
-    </library_images>
+    </library_images> -->
     <library_materials>
         <material id="material0" name="material0">
             <instance_effect url="#material0-fx"/>
@@ -22,7 +22,7 @@
     <library_effects>
         <effect id="material0-fx">
             <profile_COMMON>
-                <newparam sid="texture0-surface">
+                <!-- <newparam sid="texture0-surface">
                     <surface type="2D">
                         <init_from>texture0</init_from>
                         <format>R8G8B8</format>
@@ -34,7 +34,7 @@
                         <minfilter>LINEAR</minfilter>
                         <magfilter>LINEAR</magfilter>
                     </sampler2D>
-                </newparam>
+                </newparam> -->
                 <technique sid="common">
                     <blinn>
                         <emission>
@@ -43,9 +43,9 @@
                         <ambient>
                             <color>0 0 0 1</color>
                         </ambient>
-                        <diffuse>
+                        <!-- <diffuse>
                             <texture texture="texture0" texcoord="UVSET0"/>
-                        </diffuse>
+                        </diffuse> -->
                         <specular>
                             <color>0 0 0 1</color>
                         </specular>

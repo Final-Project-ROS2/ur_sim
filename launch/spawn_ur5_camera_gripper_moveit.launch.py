@@ -1,7 +1,7 @@
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler,
-    SetEnvironmentVariable, TimerAction
+    SetEnvironmentVariable, TimerAction, AppendEnvironmentVariable,
 )
 from launch.conditions import IfCondition, UnlessCondition
 from launch.event_handlers import OnProcessStart
@@ -19,17 +19,25 @@ def generate_launch_description():
     uryt_share     = get_package_share_directory("ur_yt_sim")
     robotiq_share  = get_package_share_directory("robotiq_description")
     ur_share       = get_package_share_directory("ur_description")
-    gazebo_ros_dir = get_package_share_directory("gazebo_ros")
+    ros_gz_sim = get_package_share_directory("ros_gz_sim")
     world_file = os.path.join(get_package_share_directory('ur_yt_sim'), 'worlds', 'world3.world')
 
     # --- ENV Gazebo ---
     ld.add_action(SetEnvironmentVariable(
         name="GAZEBO_RESOURCE_PATH",
-        value=":".join(["/usr/share/gazebo-11", uryt_share, robotiq_share, ur_share])
+        value=":".join(["/usr/share/gz", uryt_share, robotiq_share, ur_share])
     ))
-    ld.add_action(SetEnvironmentVariable(
-        name="GAZEBO_MODEL_PATH",
-        value=":".join([
+    # ld.add_action(SetEnvironmentVariable(
+    #     name="GAZEBO_MODEL_PATH",
+    #     value=":".join([
+    #         os.path.join(uryt_share,"models"),
+    #         os.path.join(robotiq_share,"models"),
+    #         os.path.expanduser("~/.gazebo/models")
+    #     ])
+    # ))
+    ld.add_action(AppendEnvironmentVariable(
+        "GZ_SIM_RESOURCE_PATH",
+        ":".join([
             os.path.join(uryt_share,"models"),
             os.path.join(robotiq_share,"models"),
             os.path.expanduser("~/.gazebo/models")
@@ -80,12 +88,28 @@ def generate_launch_description():
     )
 
     # --- Gazebo ---
-    gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(gazebo_ros_dir, "launch", "gazebo.launch.py")),
-        launch_arguments={"use_sim_time":"true", "gui":"true", "paused":"true", "world": world_file}.items()
-        # launch_arguments={"use_sim_time":"true", "gui":"true", "paused":"true"}.items()
+    # gazebo = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(os.path.join(ros_gz_sim, "launch", "gz_sim.launch.py")),
+    #     # launch_arguments={"use_sim_time":"true", "gui":"true", "paused":"true", "world": world_file}.items()
+    #     launch_arguments={'gz_args': ['-r -g -v4'], 'on_exit_shutdown': 'true'}.items(),
+    #     # launch_arguments={"use_sim_time":"true", "gui":"true", "paused":"true"}.items()
+    # )
+    # ld.add_action(gazebo)
+    gzserver_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(ros_gz_sim, "launch", "gz_sim.launch.py")
+        ),
+        launch_arguments={'gz_args': '-r -s -v4', 'on_exit_shutdown': 'true'}.items(),
     )
-    ld.add_action(gazebo)
+    ld.add_action(gzserver_cmd)
+
+    gzclient_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(ros_gz_sim, "launch", "gz_sim.launch.py")
+        ),
+        launch_arguments={'gz_args': '-g -v4'}.items(),
+    )
+    ld.add_action(gzclient_cmd)
 
     # --- RSP ---
     robot_state_publisher = Node(
@@ -98,8 +122,8 @@ def generate_launch_description():
 
     # --- Spawn ---
     spawn = Node(
-        package="gazebo_ros",
-        executable="spawn_entity.py",
+        package="ros_gz_sim",
+        executable="create",
         arguments=[
             "-entity","cobot",
             "-topic","robot_description",

@@ -32,6 +32,7 @@ ament_target_dependencies(test_ik rclcpp moveit_ros_planning_interface sensor_ms
 install(DIRECTORY launch urdf config meshes worlds rviz
   DESTINATION share/${PROJECT_NAME})
 
+
 install(TARGETS 
   test_ik
   DESTINATION lib/${PROJECT_NAME}/
