@@ -865,16 +865,15 @@
             </mesh>
           </geometry>
         </visual>
+        <sensor name='my_contact' type='contact'>
+          <contact>
+            <collision>robotiq_85_left_finger_tip_link_collision</collision>
+          </contact>
+        </sensor>
         <self_collide>0</self_collide>
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-        <sensor name="my_contact" type="contact">
-            <contact>
-              <collision>robotiq_85_left_finger_tip_link_collision</collision>
-            </contact>
-            <update_Rate> 5 </update_rate>
-        </sensor>
       <joint name='robotiq_85_right_inner_knuckle_joint' type='revolute'>
         <pose relative_to='wrist_3_link'>-0.0127 -0 0.06142 0 -0 0</pose>
         <parent>wrist_3_link</parent>
@@ -1402,6 +1401,11 @@
             </contact>
           </surface>
         </collision>
+        <sensor name='box_contact' type='contact'>
+          <contact>
+            <collision>collision</collision>
+          </contact>
+        </sensor>
       </link>
       <static>0</static>
       <allow_auto_disable>1</allow_auto_disable>
