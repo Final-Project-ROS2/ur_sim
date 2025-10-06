@@ -146,16 +146,23 @@
       </plugin>
     </gazebo> -->
     <gazebo>
-      <plugin filename="gz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
         <robot_param>robot_description</robot_param>
         <robot_param_node>robot_state_publisher</robot_param_node>
         <parameters>/home/final-project/ur_yt_ws/src/ur_yt_sim/config/ur5_controllers_gripper.yaml</parameters>
         <controller_manager_name>controller_manager</controller_manager_name>
       </plugin>
+      <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"></plugin>
+      <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"></plugin>
+      <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+        <render_engine>ogre2</render_engine>
+      </plugin>
+      <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"></plugin>
     </gazebo>
+    
 
     <!-- Grasp Plugin -->
-    <gazebo>
+    <!-- <gazebo>
       <plugin name="gazebo_grasp_fix" filename="libgazebo_grasp_fix.so">
         <arm>
           <arm_name>gripper_gazebo</arm_name>
@@ -172,7 +179,7 @@
         <disable_collision_on_attach>false</disable_collision_on_attach>
         <contact_topic>__default_topic__</contact_topic>
       </plugin>
-    </gazebo>
+    </gazebo> -->
   </xacro:if>
 
 

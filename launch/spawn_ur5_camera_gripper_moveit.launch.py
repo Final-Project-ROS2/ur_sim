@@ -57,7 +57,7 @@ def generate_launch_description():
     with_octomap  = DeclareLaunchArgument("with_octomap", default_value="true")  # << NEW
     x_arg = DeclareLaunchArgument("x", default_value="0")
     y_arg = DeclareLaunchArgument("y", default_value="0")
-    z_arg = DeclareLaunchArgument("z", default_value="0.1")
+    z_arg = DeclareLaunchArgument("z", default_value="0")
     ld.add_action(with_rviz); ld.add_action(with_octomap)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
 
@@ -111,7 +111,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(ros_gz_sim, "launch", "gz_sim.launch.py")
         ),
-        launch_arguments={'gz_args': '-r -s -v4 ', 'on_exit_shutdown': 'true'}.items(),
+        launch_arguments={'gz_args': ['-r -s -v4 '], 'on_exit_shutdown': 'true'}.items(),
     )
     ld.add_action(gazebo)
 
