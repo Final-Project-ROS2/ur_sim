@@ -21,7 +21,7 @@ def generate_launch_description():
     robotiq_share  = get_package_share_directory("robotiq_description")
     ur_share       = get_package_share_directory("ur_description")
     ros_gz_sim = get_package_share_directory("ros_gz_sim")
-    world_file = os.path.join(get_package_share_directory('ur_yt_sim'), 'worlds', 'world3.world')
+    world_file = os.path.join(get_package_share_directory('ur_yt_sim'), 'worlds', 'world3.sdf')
 
     # --- ENV Gazebo ---
     ld.add_action(SetEnvironmentVariable(
@@ -111,7 +111,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(ros_gz_sim, "launch", "gz_sim.launch.py")
         ),
-        launch_arguments={'gz_args': ['-r -s -v4 '], 'on_exit_shutdown': 'true'}.items(),
+        launch_arguments={'gz_args': ['-r -s -v4 ', ], 'on_exit_shutdown': 'true'}.items(),
     )
     ld.add_action(gazebo)
 
