@@ -13,6 +13,10 @@ find_package(std_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(rclcpp_action REQUIRED)
+find_package(moveit_core REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(action_tutorials_interfaces REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -26,8 +30,21 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+
 add_executable(test_ik src/test_ik.cpp)
 ament_target_dependencies(test_ik rclcpp moveit_ros_planning_interface sensor_msgs geometry_msgs)
+
+add_executable(moveit_pose_action_server src/moveit_pose_action_server.cpp)
+ament_target_dependencies(moveit_pose_action_server
+  rclcpp 
+  rclcpp_action
+  geometry_msgs
+  moveit_ros_planning_interface
+  moveit_core
+  tf2_geometry_msgs
+  action_tutorials_interfaces
+)
+
 
 install(DIRECTORY launch urdf config meshes worlds rviz
   DESTINATION share/${PROJECT_NAME})
@@ -36,5 +53,12 @@ install(TARGETS
   test_ik
   DESTINATION lib/${PROJECT_NAME}/
 )
+
+install(TARGETS
+  moveit_pose_action_server
+  DESTINATION lib/${PROJECT_NAME}/
+)
+
+
 
 ament_package()

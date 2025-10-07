@@ -8,6 +8,7 @@
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <depend>xacro</depend>
   <depend>rclcpp</depend>
@@ -15,9 +16,17 @@
   <depend>trajectory_msgs</depend>
   <depend>moveit_ros_planning_interface</depend>
   <depend>sensor_msgs</depend>
+  <depend>rclcpp_action</depend>
+  <depend>geometry_msgs</depend>
+  <depend>moveit_core</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>action_msgs</depend>
+  <depend>action_tutorials_interfaces</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>
