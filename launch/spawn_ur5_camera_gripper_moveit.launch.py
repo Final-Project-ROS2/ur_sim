@@ -188,4 +188,13 @@ def generate_launch_description():
     )
     ld.add_action(contact_listener)
 
+    moveit_pose_action_server_node = Node(
+        package='ur_yt_sim',
+        executable='moveit_pose_action_server',
+        name='moveit_pose_action_server_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(moveit_pose_action_server_node)
+
     return ld
