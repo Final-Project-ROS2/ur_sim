@@ -170,4 +170,22 @@ def generate_launch_description():
     ld.add_action(move_group_with_octomap)
     ld.add_action(move_group_no_octomap)
 
+    gripper_wrapper = Node(
+            package='gripper_helper',          
+            executable='wrapper_gripper_node',
+            name='gripper_wrapper_node',
+            output='screen',
+            emulate_tty=True,                      
+    )
+    ld.add_action(gripper_wrapper)
+
+    contact_listener = Node(
+            package='gripper_helper',          
+            executable='contact_listener',
+            name='contact_listener_node',
+            output='screen',
+            emulate_tty=True,                      
+    )
+    ld.add_action(contact_listener)
+
     return ld
