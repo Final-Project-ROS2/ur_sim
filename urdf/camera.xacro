@@ -57,7 +57,8 @@
             <clip><near>0.05</near><far>8</far></clip>
             </camera>
             <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-            <frame_name>camera_optical_link</frame_name>
+                <frame_name>camera_optical_link</frame_name>
+                <cameraInfoTopicName>camera_info</cameraInfoTopicName>
             </plugin>
         </sensor>
     </gazebo>

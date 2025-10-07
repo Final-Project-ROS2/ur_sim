@@ -197,4 +197,13 @@ def generate_launch_description():
     )
     ld.add_action(moveit_pose_action_server_node)
 
+    show_rgb_image_node = Node(
+        package='vision',
+        executable='show_rgb_image',
+        name='show_rgb_image_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(show_rgb_image_node)
+
     return ld
