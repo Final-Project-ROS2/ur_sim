@@ -7,14 +7,27 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 const double tau = 2 * M_PI;
+const double BASE_LINK_X_OFFSET = 0.0;
+const double BASE_LINK_Y_OFFSET = 0.0;
+const double BASE_LINK_Z_OFFSET = 0.8;
 
 int main(int argc, char **argv)
 {
     // ROS2 Initialization
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<rclcpp::Node>("move_group_interface");
+
+    rclcpp::NodeOptions options;
+    options.parameter_overrides({{"use_sim_time", rclcpp::ParameterValue(true)}});
+
+    auto node = std::make_shared<rclcpp::Node>("move_group_interface", options);
     bool use_sim_time = node->get_parameter("use_sim_time").as_bool();
     RCLCPP_INFO(node->get_logger(), "Use sim time: %s", use_sim_time ? "true" : "false");
+
+    node->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver", "kdl_kinematics_plugin/KDLKinematicsPlugin");
+    node->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver_search_resolution", 0.005);
+    node->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver_timeout", 0.005);
+    node->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver_attempts", 3);
+
 
     // Logger
     auto logger = rclcpp::get_logger("move_group_interface");
@@ -41,11 +54,12 @@ int main(int argc, char **argv)
     tf2::Quaternion orientation;
     orientation.setRPY(-3.136, 0.000, -1.570);
     target_pose.orientation = tf2::toMsg(orientation);
-    target_pose.position.x = 0.495;
-    target_pose.position.y = 0.0;
-    target_pose.position.z = 0.164;
+    target_pose.position.x = -0.495 + BASE_LINK_X_OFFSET;
+    target_pose.position.y = 0.0 + BASE_LINK_Y_OFFSET;
+    target_pose.position.z = 0.164 + BASE_LINK_Z_OFFSET;
 
-    move_group.setPoseTarget(target_pose, "tool0");
+    // move_group.setPoseTarget(target_pose, "tool0");
+    move_group.setJointValueTarget(target_pose, "tool0");
     // move_group.setApproximateJointValueTarget(target_pose, "tool0");
 
     RCLCPP_INFO(logger, "Planning frame: %s", move_group.getPlanningFrame().c_str());

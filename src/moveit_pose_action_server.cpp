@@ -14,40 +14,32 @@
 
 using MoveItPose = action_tutorials_interfaces::action::MoveitPose; // Example action
 
+const double BASE_LINK_X_OFFSET = 0.0;
+const double BASE_LINK_Y_OFFSET = 0.0;
+const double BASE_LINK_Z_OFFSET = 0.8;
+
 class MoveItPoseActionServer : public rclcpp::Node
 {
 public:
     using GoalHandleMoveItPose = rclcpp_action::ServerGoalHandle<MoveItPose>;
 
-    // MoveItPoseActionServer()
-    // : Node("moveit_pose_action_server")
-    // {
-    //     RCLCPP_INFO(this->get_logger(), "Initializing MoveIt pose action server...");
-
-    //     // Initialize MoveGroupInterface
-    //     move_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(shared_from_this(), "ur5_manipulator");
-    //     move_group_->setPoseReferenceFrame("base_link");
-    //     move_group_->setPlanningTime(10.0);
-
-    //     RCLCPP_INFO(this->get_logger(), "Pose reference frame set to: %s", move_group_->getPoseReferenceFrame().c_str());
-    //     RCLCPP_INFO(this->get_logger(), "Planning frame: %s", move_group_->getPlanningFrame().c_str());
-    //     RCLCPP_INFO(this->get_logger(), "End effector link: %s", move_group_->getEndEffectorLink().c_str());
-
-    //     // Action server
-    //     action_server_ = rclcpp_action::create_server<MoveItPose>(
-    //         this,
-    //         "plan_execute_pose",
-    //         std::bind(&MoveItPoseActionServer::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-    //         std::bind(&MoveItPoseActionServer::handle_cancel, this, std::placeholders::_1),
-    //         std::bind(&MoveItPoseActionServer::handle_accepted, this, std::placeholders::_1)
-    //     );
-    // }
-    MoveItPoseActionServer()
-    : Node("moveit_pose_action_server")
+    explicit MoveItPoseActionServer(const rclcpp::NodeOptions &options)
+    : Node("moveit_pose_action_server", options)
     {
         RCLCPP_INFO(this->get_logger(), "Initializing MoveIt pose action server...");
 
-        // Action server setup (can remain here)
+        // Declare and log use_sim_time
+        // this->declare_parameter("use_sim_time", true);
+        bool use_sim_time = this->get_parameter("use_sim_time").as_bool();
+        RCLCPP_INFO(this->get_logger(), "Use sim time: %s", use_sim_time ? "true" : "false");
+
+        // Declare kinematics parameters
+        this->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver", "kdl_kinematics_plugin/KDLKinematicsPlugin");
+        this->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver_search_resolution", 0.005);
+        this->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver_timeout", 0.005);
+        this->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver_attempts", 3);
+
+        // Create the action server
         action_server_ = rclcpp_action::create_server<MoveItPose>(
             this,
             "plan_execute_pose",
@@ -56,6 +48,28 @@ public:
             std::bind(&MoveItPoseActionServer::handle_accepted, this, std::placeholders::_1)
         );
     }
+    // MoveItPoseActionServer()
+    // : Node("moveit_pose_action_server")
+    // {
+    //     RCLCPP_INFO(this->get_logger(), "Initializing MoveIt pose action server...");
+
+    //     bool use_sim_time = this->get_parameter("use_sim_time").as_bool();
+    //     RCLCPP_INFO(this->get_logger(), "Use sim time: %s", use_sim_time ? "true" : "false");
+
+    //     this->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver", "kdl_kinematics_plugin/KDLKinematicsPlugin");
+    //     this->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver_search_resolution", 0.005);
+    //     this->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver_timeout", 0.005);
+    //     this->declare_parameter("robot_description_kinematics.ur5_manipulator.kinematics_solver_attempts", 3);
+
+    //     // Action server setup (can remain here)
+    //     action_server_ = rclcpp_action::create_server<MoveItPose>(
+    //         this,
+    //         "plan_execute_pose",
+    //         std::bind(&MoveItPoseActionServer::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+    //         std::bind(&MoveItPoseActionServer::handle_cancel, this, std::placeholders::_1),
+    //         std::bind(&MoveItPoseActionServer::handle_accepted, this, std::placeholders::_1)
+    //     );
+    // }
 
     void init_move_group()
     {
@@ -112,15 +126,16 @@ private:
         // target_pose.position.z = 0.164;
         orientation.setRPY(pose.orientation.x, pose.orientation.y, pose.orientation.z);
         target_pose.orientation = tf2::toMsg(orientation);
-        target_pose.position.x = pose.position.x;
-        target_pose.position.y = pose.position.y;
-        target_pose.position.z = pose.position.z;
+        target_pose.position.x = pose.position.x + BASE_LINK_X_OFFSET;
+        target_pose.position.y = pose.position.y + BASE_LINK_Y_OFFSET;
+        target_pose.position.z = pose.position.z + BASE_LINK_Z_OFFSET;
 
 
         // auto goal = goal_handle->get_goal();
         // geometry_msgs::msg::Pose target_pose = goal->pose;
 
-        move_group_->setPoseTarget(target_pose, "tool0");
+        // move_group_->setPoseTarget(target_pose, "tool0");
+        move_group_->setJointValueTarget(target_pose, "tool0");
 
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
         bool success = (move_group_->plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
@@ -145,7 +160,9 @@ private:
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<MoveItPoseActionServer>();
+    rclcpp::NodeOptions options;
+    options.parameter_overrides({{"use_sim_time", rclcpp::ParameterValue(true)}});
+    auto node = std::make_shared<MoveItPoseActionServer>(options);
     node->init_move_group(); // Initialize MoveGroupInterface after node creation
     rclcpp::spin(node);
     rclcpp::shutdown();

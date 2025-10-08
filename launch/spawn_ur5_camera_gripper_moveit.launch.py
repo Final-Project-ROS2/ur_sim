@@ -193,7 +193,8 @@ def generate_launch_description():
         executable='moveit_pose_action_server',
         name='moveit_pose_action_server_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[{'use_sim_time': True}]
     )
     ld.add_action(moveit_pose_action_server_node)
 
