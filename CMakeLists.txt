@@ -16,7 +16,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(moveit_core REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-find_package(action_tutorials_interfaces REQUIRED)
+find_package(custom_interfaces REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -42,7 +42,7 @@ ament_target_dependencies(moveit_pose_action_server
   moveit_ros_planning_interface
   moveit_core
   tf2_geometry_msgs
-  action_tutorials_interfaces
+  custom_interfaces
 )
 
 
