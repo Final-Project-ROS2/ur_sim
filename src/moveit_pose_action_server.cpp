@@ -130,7 +130,43 @@ private:
         target_pose.position.y = pose.position.y + BASE_LINK_Y_OFFSET;
         target_pose.position.z = pose.position.z + BASE_LINK_Z_OFFSET;
 
+        // Path Constraints
+        // moveit_msgs::msg::Constraints path_constraints;
 
+        // moveit_msgs::msg::JointConstraint joint_constraint_shoulder_pan_joint;
+        // joint_constraint_shoulder_pan_joint.joint_name = "shoulder_pan_joint";
+        // joint_constraint_shoulder_pan_joint.position = 0.0;  // Set desired position
+        // joint_constraint_shoulder_pan_joint.tolerance_above = M_PI;  // Set tolerance
+        // joint_constraint_shoulder_pan_joint.tolerance_below = M_PI;  // Set tolerance
+        // joint_constraint_shoulder_pan_joint.weight = 1.0;  // Set weight
+        // path_constraints.joint_constraints.push_back(joint_constraint_shoulder_pan_joint);
+
+        // moveit_msgs::msg::JointConstraint joint_constraint_shoulder_lift_joint;
+        // joint_constraint_shoulder_lift_joint.joint_name = "shoulder_lift_joint";
+        // joint_constraint_shoulder_lift_joint.position = 0.0;  // Set desired position
+        // joint_constraint_shoulder_lift_joint.tolerance_above = M_PI;  // Set tolerance
+        // joint_constraint_shoulder_lift_joint.tolerance_below = M_PI;  // Set tolerance
+        // joint_constraint_shoulder_lift_joint.weight = 1.0;  // Set weight
+        // path_constraints.joint_constraints.push_back(joint_constraint_shoulder_lift_joint);
+
+        // moveit_msgs::msg::JointConstraint joint_constraint_elbow_joint;
+        // joint_constraint_elbow_joint.joint_name = "elbow_joint";
+        // joint_constraint_elbow_joint.position = 0.0;  // Set desired position
+        // joint_constraint_elbow_joint.tolerance_above = M_PI / 2;  // Set tolerance
+        // joint_constraint_elbow_joint.tolerance_below = M_PI / 2;  // Set tolerance
+        // joint_constraint_elbow_joint.weight = 1.0;  // Set weight
+        // path_constraints.joint_constraints.push_back(joint_constraint_elbow_joint);
+
+        // moveit_msgs::msg::JointConstraint joint_constraint_wrist_3_joint;
+        // joint_constraint_wrist_3_joint.joint_name = "wrist_3_joint";
+        // joint_constraint_wrist_3_joint.position = 0.0;  // Set desired position
+        // joint_constraint_wrist_3_joint.tolerance_above = M_PI / 2;  // Set tolerance
+        // joint_constraint_wrist_3_joint.tolerance_below = M_PI / 2;  // Set tolerance
+        // joint_constraint_wrist_3_joint.weight = 1.0;  // Set weight
+        // path_constraints.joint_constraints.push_back(joint_constraint_wrist_3_joint);
+
+        // move_group_->setPathConstraints(path_constraints);
+    
         // auto goal = goal_handle->get_goal();
         // geometry_msgs::msg::Pose target_pose = goal->pose;
 

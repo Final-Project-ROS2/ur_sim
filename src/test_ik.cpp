@@ -3,6 +3,8 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit_msgs/msg/display_trajectory.hpp>
+#include <moveit_msgs/msg/constraints.hpp>
+#include <moveit_msgs/msg/joint_constraint.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
@@ -54,16 +56,66 @@ int main(int argc, char **argv)
     tf2::Quaternion orientation;
     orientation.setRPY(-3.136, 0.000, -1.570);
     target_pose.orientation = tf2::toMsg(orientation);
-    target_pose.position.x = -0.495 + BASE_LINK_X_OFFSET;
-    target_pose.position.y = 0.0 + BASE_LINK_Y_OFFSET;
-    target_pose.position.z = 0.164 + BASE_LINK_Z_OFFSET;
+    target_pose.position.x = -0.495;
+    target_pose.position.y = 0.0;
+    target_pose.position.z = 0.164;
 
-    // move_group.setPoseTarget(target_pose, "tool0");
-    move_group.setJointValueTarget(target_pose, "tool0");
+    move_group.setPoseTarget(target_pose, "tool0");
+    // move_group.setJointValueTarget(target_pose, "tool0");
     // move_group.setApproximateJointValueTarget(target_pose, "tool0");
 
     RCLCPP_INFO(logger, "Planning frame: %s", move_group.getPlanningFrame().c_str());
     RCLCPP_INFO(logger, "End effector link: %s", move_group.getEndEffectorLink().c_str());
+
+    // Path Constraints
+    moveit_msgs::msg::Constraints path_constraints;
+
+    std::vector<std::string> joint_names = {"shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"};
+
+    // Loop through the list using a for loop
+    // for (const std::string& joint_name : joint_names) {
+    //     moveit_msgs::msg::JointConstraint joint_constraint;
+    //     joint_constraint.joint_name = joint_name;
+    //     joint_constraint.position = 0.0;  // Set desired position
+    //     joint_constraint.tolerance_above = M_PI;  // Set tolerance
+    //     joint_constraint.tolerance_below = M_PI;  // Set tolerance
+    //     joint_constraint.weight = 1.0;  // Set weight
+    //     path_constraints.joint_constraints.push_back(joint_constraint);
+    // }
+    moveit_msgs::msg::JointConstraint joint_constraint_shoulder_pan_joint;
+    joint_constraint_shoulder_pan_joint.joint_name = "shoulder_pan_joint";
+    joint_constraint_shoulder_pan_joint.position = 0.0;  // Set desired position
+    joint_constraint_shoulder_pan_joint.tolerance_above = M_PI;  // Set tolerance
+    joint_constraint_shoulder_pan_joint.tolerance_below = M_PI;  // Set tolerance
+    joint_constraint_shoulder_pan_joint.weight = 1.0;  // Set weight
+    path_constraints.joint_constraints.push_back(joint_constraint_shoulder_pan_joint);
+
+    moveit_msgs::msg::JointConstraint joint_constraint_shoulder_lift_joint;
+    joint_constraint_shoulder_lift_joint.joint_name = "shoulder_lift_joint";
+    joint_constraint_shoulder_lift_joint.position = 0.0;  // Set desired position
+    joint_constraint_shoulder_lift_joint.tolerance_above = M_PI;  // Set tolerance
+    joint_constraint_shoulder_lift_joint.tolerance_below = M_PI;  // Set tolerance
+    joint_constraint_shoulder_lift_joint.weight = 1.0;  // Set weight
+    path_constraints.joint_constraints.push_back(joint_constraint_shoulder_lift_joint);
+
+    moveit_msgs::msg::JointConstraint joint_constraint_elbow_joint;
+    joint_constraint_elbow_joint.joint_name = "elbow_joint";
+    joint_constraint_elbow_joint.position = 0.0;  // Set desired position
+    joint_constraint_elbow_joint.tolerance_above = 0.0;  // Set tolerance
+    joint_constraint_elbow_joint.tolerance_below = M_PI / 2;  // Set tolerance
+    joint_constraint_elbow_joint.weight = 1.0;  // Set weight
+    path_constraints.joint_constraints.push_back(joint_constraint_elbow_joint);
+
+    moveit_msgs::msg::JointConstraint joint_constraint_wrist_3_joint;
+    joint_constraint_wrist_3_joint.joint_name = "wrist_3_joint";
+    joint_constraint_wrist_3_joint.position = 0.0;  // Set desired position
+    joint_constraint_wrist_3_joint.tolerance_above = M_PI / 2;  // Set tolerance
+    joint_constraint_wrist_3_joint.tolerance_below = M_PI / 2;  // Set tolerance
+    joint_constraint_wrist_3_joint.weight = 1.0;  // Set weight
+    path_constraints.joint_constraints.push_back(joint_constraint_wrist_3_joint);
+
+    move_group.setPathConstraints(path_constraints);
+    
 
     // Planning
     MoveGroupInterface::Plan my_plan;
