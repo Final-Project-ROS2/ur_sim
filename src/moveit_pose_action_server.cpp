@@ -85,6 +85,7 @@ public:
 private:
     rclcpp_action::Server<MoveItPose>::SharedPtr action_server_;
     std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
+    moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
     rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid,
                                             std::shared_ptr<const MoveItPose::Goal> goal)
@@ -172,6 +173,38 @@ private:
 
         // move_group_->setPoseTarget(target_pose, "tool0");
         move_group_->setJointValueTarget(target_pose, "tool0");
+
+        // Collision object
+
+        std::vector<moveit_msgs::msg::CollisionObject> collision_objects;
+        collision_objects.resize(2);
+
+        collision_objects[0].id = "table1";
+        collision_objects[0].header.frame_id = "world";
+        collision_objects[0].primitives.resize(1);
+        collision_objects[0].primitives[0].type = shape_msgs::msg::SolidPrimitive::BOX;
+        collision_objects[0].primitives[0].dimensions = {0.608, 2.0, 0.8};
+        collision_objects[0].primitive_poses.resize(1);
+        collision_objects[0].primitive_poses[0].position.x = 0.576;
+        collision_objects[0].primitive_poses[0].position.y = 0.0;
+        collision_objects[0].primitive_poses[0].position.z = 0.4;
+        collision_objects[0].operation = moveit_msgs::msg::CollisionObject::ADD;
+
+        collision_objects[1].id = "base";
+        collision_objects[1].header.frame_id = "world";
+        collision_objects[1].primitives.resize(1);
+        collision_objects[1].primitives[0].type = shape_msgs::msg::SolidPrimitive::BOX;
+        collision_objects[1].primitives[0].dimensions = {1, 1, 0.79}; 
+        collision_objects[1].primitive_poses.resize(1);
+        collision_objects[1].primitive_poses[0].position.x = -0.3;
+        collision_objects[1].primitive_poses[0].position.y = 0.0;
+        collision_objects[1].primitive_poses[0].position.z = 0.4;
+        collision_objects[1].operation = moveit_msgs::msg::CollisionObject::ADD;
+
+
+        // Add objects to the scene
+        planning_scene_interface.applyCollisionObjects(collision_objects);
+
 
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
         bool success = (move_group_->plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);

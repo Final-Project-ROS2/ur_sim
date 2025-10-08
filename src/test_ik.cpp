@@ -56,66 +56,49 @@ int main(int argc, char **argv)
     tf2::Quaternion orientation;
     orientation.setRPY(-3.136, 0.000, -1.570);
     target_pose.orientation = tf2::toMsg(orientation);
-    target_pose.position.x = -0.495;
-    target_pose.position.y = 0.0;
-    target_pose.position.z = 0.164;
+    target_pose.position.x = -0.495 + BASE_LINK_X_OFFSET;
+    target_pose.position.y = 0.0 + BASE_LINK_Y_OFFSET;
+    target_pose.position.z = 0.164 + BASE_LINK_Z_OFFSET;
 
-    move_group.setPoseTarget(target_pose, "tool0");
-    // move_group.setJointValueTarget(target_pose, "tool0");
+    // move_group.setPoseTarget(target_pose, "tool0");
+    move_group.setJointValueTarget(target_pose, "tool0");
     // move_group.setApproximateJointValueTarget(target_pose, "tool0");
 
     RCLCPP_INFO(logger, "Planning frame: %s", move_group.getPlanningFrame().c_str());
     RCLCPP_INFO(logger, "End effector link: %s", move_group.getEndEffectorLink().c_str());
 
-    // Path Constraints
-    moveit_msgs::msg::Constraints path_constraints;
+    // Collision object
 
-    std::vector<std::string> joint_names = {"shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"};
+    std::vector<moveit_msgs::msg::CollisionObject> collision_objects;
+    collision_objects.resize(2);
 
-    // Loop through the list using a for loop
-    // for (const std::string& joint_name : joint_names) {
-    //     moveit_msgs::msg::JointConstraint joint_constraint;
-    //     joint_constraint.joint_name = joint_name;
-    //     joint_constraint.position = 0.0;  // Set desired position
-    //     joint_constraint.tolerance_above = M_PI;  // Set tolerance
-    //     joint_constraint.tolerance_below = M_PI;  // Set tolerance
-    //     joint_constraint.weight = 1.0;  // Set weight
-    //     path_constraints.joint_constraints.push_back(joint_constraint);
-    // }
-    moveit_msgs::msg::JointConstraint joint_constraint_shoulder_pan_joint;
-    joint_constraint_shoulder_pan_joint.joint_name = "shoulder_pan_joint";
-    joint_constraint_shoulder_pan_joint.position = 0.0;  // Set desired position
-    joint_constraint_shoulder_pan_joint.tolerance_above = M_PI;  // Set tolerance
-    joint_constraint_shoulder_pan_joint.tolerance_below = M_PI;  // Set tolerance
-    joint_constraint_shoulder_pan_joint.weight = 1.0;  // Set weight
-    path_constraints.joint_constraints.push_back(joint_constraint_shoulder_pan_joint);
+    collision_objects[0].id = "table1";
+    collision_objects[0].header.frame_id = "world";
+    collision_objects[0].primitives.resize(1);
+    collision_objects[0].primitives[0].type = shape_msgs::msg::SolidPrimitive::BOX;
+    collision_objects[0].primitives[0].dimensions = {0.608, 2.0, 0.8};
+    collision_objects[0].primitive_poses.resize(1);
+    collision_objects[0].primitive_poses[0].position.x = 0.576;
+    collision_objects[0].primitive_poses[0].position.y = 0.0;
+    collision_objects[0].primitive_poses[0].position.z = 0.4;
+    collision_objects[0].operation = moveit_msgs::msg::CollisionObject::ADD;
 
-    moveit_msgs::msg::JointConstraint joint_constraint_shoulder_lift_joint;
-    joint_constraint_shoulder_lift_joint.joint_name = "shoulder_lift_joint";
-    joint_constraint_shoulder_lift_joint.position = 0.0;  // Set desired position
-    joint_constraint_shoulder_lift_joint.tolerance_above = M_PI;  // Set tolerance
-    joint_constraint_shoulder_lift_joint.tolerance_below = M_PI;  // Set tolerance
-    joint_constraint_shoulder_lift_joint.weight = 1.0;  // Set weight
-    path_constraints.joint_constraints.push_back(joint_constraint_shoulder_lift_joint);
+    collision_objects[1].id = "base";
+    collision_objects[1].header.frame_id = "world";
+    collision_objects[1].primitives.resize(1);
+    collision_objects[1].primitives[0].type = shape_msgs::msg::SolidPrimitive::BOX;
+    collision_objects[1].primitives[0].dimensions = {1, 1, 0.79}; 
+    collision_objects[1].primitive_poses.resize(1);
+    collision_objects[1].primitive_poses[0].position.x = -0.3;
+    collision_objects[1].primitive_poses[0].position.y = 0.0;
+    collision_objects[1].primitive_poses[0].position.z = 0.4;
+    collision_objects[1].operation = moveit_msgs::msg::CollisionObject::ADD;
 
-    moveit_msgs::msg::JointConstraint joint_constraint_elbow_joint;
-    joint_constraint_elbow_joint.joint_name = "elbow_joint";
-    joint_constraint_elbow_joint.position = 0.0;  // Set desired position
-    joint_constraint_elbow_joint.tolerance_above = 0.0;  // Set tolerance
-    joint_constraint_elbow_joint.tolerance_below = M_PI / 2;  // Set tolerance
-    joint_constraint_elbow_joint.weight = 1.0;  // Set weight
-    path_constraints.joint_constraints.push_back(joint_constraint_elbow_joint);
 
-    moveit_msgs::msg::JointConstraint joint_constraint_wrist_3_joint;
-    joint_constraint_wrist_3_joint.joint_name = "wrist_3_joint";
-    joint_constraint_wrist_3_joint.position = 0.0;  // Set desired position
-    joint_constraint_wrist_3_joint.tolerance_above = M_PI / 2;  // Set tolerance
-    joint_constraint_wrist_3_joint.tolerance_below = M_PI / 2;  // Set tolerance
-    joint_constraint_wrist_3_joint.weight = 1.0;  // Set weight
-    path_constraints.joint_constraints.push_back(joint_constraint_wrist_3_joint);
+    // Add objects to the scene
+    planning_scene_interface.applyCollisionObjects(collision_objects);
+    RCLCPP_INFO(logger, "Collision objects added to the planning scene.");
 
-    move_group.setPathConstraints(path_constraints);
-    
 
     // Planning
     MoveGroupInterface::Plan my_plan;
