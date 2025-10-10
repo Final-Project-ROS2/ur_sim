@@ -218,6 +218,16 @@ def generate_launch_description():
     )
     ld.add_action(low_level_planner_executor_node)
 
+    cartesian_path_action_server_node = Node(
+        package='low_level_planner_executor',
+        executable='cartesian_path_action_server',
+        name='cartesian_path_action_server_node',
+        output='screen',
+        emulate_tty=True,
+        parameters=[{'use_sim_time': True}],
+    )
+    ld.add_action(cartesian_path_action_server_node)
+
     show_rgb_image_node = Node(
         package='vision',
         executable='show_rgb_image',
