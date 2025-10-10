@@ -162,12 +162,12 @@ def generate_launch_description():
         output="screen",
         parameters=[mg_params_no_sensors],
         arguments=["--ros-args","--log-level","info"],
-        condition=UnlessCondition(LaunchConfiguration("with_octomap")),
+        # condition=UnlessCondition(LaunchConfiguration("with_octomap")),
     )
 
     
 
-    ld.add_action(move_group_with_octomap)
+    # ld.add_action(move_group_with_octomap)
     ld.add_action(move_group_no_octomap)
 
     gripper_wrapper = Node(
@@ -188,15 +188,35 @@ def generate_launch_description():
     )
     ld.add_action(contact_listener)
 
+    # moveit_pose_action_server_node = Node(
+    #     package='ur_yt_sim',
+    #     executable='moveit_pose_action_server',
+    #     name='moveit_pose_action_server_node',
+    #     output='screen',
+    #     emulate_tty=True,
+    #     parameters=[{'use_sim_time': True}]
+    # )
+    # ld.add_action(moveit_pose_action_server_node)
+
     moveit_pose_action_server_node = Node(
-        package='ur_yt_sim',
+        package='low_level_planner_executor',
         executable='moveit_pose_action_server',
         name='moveit_pose_action_server_node',
         output='screen',
         emulate_tty=True,
-        parameters=[{'use_sim_time': True}]
+        parameters=[{'use_sim_time': True}],
     )
     ld.add_action(moveit_pose_action_server_node)
+
+    low_level_planner_executor_node = Node(
+        package='low_level_planner_executor',
+        executable='low_level_planner_executor',
+        name='low_level_planner_executor_node',
+        output='screen',
+        emulate_tty=True,
+        parameters=[{'use_sim_time': True}],
+    )
+    ld.add_action(low_level_planner_executor_node)
 
     show_rgb_image_node = Node(
         package='vision',

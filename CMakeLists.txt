@@ -17,6 +17,7 @@ find_package(rclcpp_action REQUIRED)
 find_package(moveit_core REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(custom_interfaces REQUIRED)
+find_package(low_level_planner_executor REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
