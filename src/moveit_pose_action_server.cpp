@@ -9,7 +9,7 @@
 
 // Include ROS2 action interfaces
 #include <rclcpp_action/rclcpp_action.hpp>
-// #include "/home/final-project/ur_yt_ws/install/ur_yt_sim/include/ur_yt_sim/ur_yt_sim/action/move_it_pose.hpp" // Replace with your custom action if needed
+// #include "/home/group11/final_project_ws/install/ur_yt_sim/include/ur_yt_sim/ur_yt_sim/action/move_it_pose.hpp" // Replace with your custom action if needed
 #include "custom_interfaces/action/moveit_pose.hpp"
 
 using MoveItPose = custom_interfaces::action::MoveitPose; // Custom action
