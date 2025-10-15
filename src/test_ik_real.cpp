@@ -1,0 +1,145 @@
+#include <memory>
+#include <rclcpp/rclcpp.hpp>
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
+#include <moveit_msgs/msg/display_trajectory.hpp>
+#include <moveit_msgs/msg/constraints.hpp>
+#include <moveit_msgs/msg/joint_constraint.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
+const double tau = 2 * M_PI;
+const double BASE_LINK_X_OFFSET = 0.0;
+const double BASE_LINK_Y_OFFSET = 0.0;
+const double BASE_LINK_Z_OFFSET = 0.0;
+
+int main(int argc, char **argv)
+{
+    // ROS2 Initialization
+    rclcpp::init(argc, argv);
+
+    // rclcpp::NodeOptions options;
+    // options.parameter_overrides({{"use_sim_time", rclcpp::ParameterValue(true)}});
+
+    auto node = std::make_shared<rclcpp::Node>("move_group_interface");
+    // auto node = std::make_shared<rclcpp::Node>("move_group_interface", options);
+    // bool use_sim_time = node->get_parameter("use_sim_time").as_bool();
+    // RCLCPP_INFO(node->get_logger(), "Use sim time: %s", use_sim_time ? "true" : "false");
+
+    node->declare_parameter("robot_description_kinematics.ur_manipulator.kinematics_solver", "kdl_kinematics_plugin/KDLKinematicsPlugin");
+    node->declare_parameter("robot_description_kinematics.ur_manipulator.kinematics_solver_search_resolution", 0.005);
+    node->declare_parameter("robot_description_kinematics.ur_manipulator.kinematics_solver_timeout", 0.005);
+    node->declare_parameter("robot_description_kinematics.ur_manipulator.kinematics_solver_attempts", 3);
+
+
+    // Logger
+    auto logger = rclcpp::get_logger("move_group_interface");
+
+    // Spinner with more thread for avoiding blocks
+    rclcpp::executors::MultiThreadedExecutor executor;
+    executor.add_node(node);
+    std::thread spinner_thread([&executor]() { executor.spin(); });
+
+    // Wait initialization
+    rclcpp::sleep_for(std::chrono::seconds(2));
+
+    // MoveIt2 interface
+    using moveit::planning_interface::MoveGroupInterface;
+    MoveGroupInterface move_group(node, "ur_manipulator");
+    move_group.setPoseReferenceFrame("base_link");
+    move_group.setPlanningTime(10.0);
+
+    move_group.setStartStateToCurrentState();
+    auto current_pose =move_group.getCurrentPose("tool0").pose;
+    RCLCPP_INFO(logger, "Current pose: %.3f %.3f %.3f %.3f %.3f %.3f %.3f",
+                current_pose.position.x, current_pose.position.y, current_pose.position.z,
+                current_pose.orientation.x, current_pose.orientation.y, current_pose.orientation.z, current_pose.orientation.w);
+
+
+    moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+
+    RCLCPP_INFO(logger, "Pose reference frame set to: %s", move_group.getPoseReferenceFrame().c_str());
+
+    geometry_msgs::msg::Pose target_pose_check;
+    // tf2::Quaternion orientation;
+    // orientation.setRPY(current_pose.orientation.x, current_pose.orientation.y, current_pose.orientation.z);
+    // target_pose_check.orientation = tf2::toMsg(orientation);
+    target_pose_check.position.x = current_pose.position.x + BASE_LINK_X_OFFSET;
+    target_pose_check.position.y = current_pose.position.y + BASE_LINK_Y_OFFSET;
+    target_pose_check.position.z = current_pose.position.z + BASE_LINK_Z_OFFSET;
+    target_pose_check.orientation.x = current_pose.orientation.x;
+    target_pose_check.orientation.y = current_pose.orientation.y;
+    target_pose_check.orientation.z = current_pose.orientation.z;
+    target_pose_check.orientation.w = current_pose.orientation.w;
+
+    geometry_msgs::msg::Pose target_pose = current_pose;
+    target_pose.position.z -= 0.05;
+
+    RCLCPP_INFO(logger, "Target pose check: %.3f %.3f %.3f %.3f %.3f %.3f %.3f",
+                target_pose_check.position.x, target_pose_check.position.y, target_pose_check.position.z,
+                target_pose_check.orientation.x, target_pose_check.orientation.y, target_pose_check.orientation.z, target_pose_check.orientation.w);
+
+    RCLCPP_INFO(logger, "Target pose: %.3f %.3f %.3f %.3f %.3f %.3f %.3f",
+                target_pose.position.x, target_pose.position.y, target_pose.position.z,
+                target_pose.orientation.x, target_pose.orientation.y, target_pose.orientation.z, target_pose.orientation.w);
+
+    // move_group.setPoseTarget(target_pose, "tool0");
+    move_group.setJointValueTarget(target_pose, "tool0");
+    // move_group.setApproximateJointValueTarget(target_pose, "tool0");
+
+    RCLCPP_INFO(logger, "Planning frame: %s", move_group.getPlanningFrame().c_str());
+    RCLCPP_INFO(logger, "End effector link: %s", move_group.getEndEffectorLink().c_str());
+
+    // Collision object
+
+    // std::vector<moveit_msgs::msg::CollisionObject> collision_objects;
+    // collision_objects.resize(2);
+
+    // collision_objects[0].id = "table1";
+    // collision_objects[0].header.frame_id = "world";
+    // collision_objects[0].primitives.resize(1);
+    // collision_objects[0].primitives[0].type = shape_msgs::msg::SolidPrimitive::BOX;
+    // collision_objects[0].primitives[0].dimensions = {0.608, 2.0, 0.8};
+    // collision_objects[0].primitive_poses.resize(1);
+    // collision_objects[0].primitive_poses[0].position.x = 0.576;
+    // collision_objects[0].primitive_poses[0].position.y = 0.0;
+    // collision_objects[0].primitive_poses[0].position.z = 0.4;
+    // collision_objects[0].operation = moveit_msgs::msg::CollisionObject::ADD;
+
+    // collision_objects[1].id = "base";
+    // collision_objects[1].header.frame_id = "world";
+    // collision_objects[1].primitives.resize(1);
+    // collision_objects[1].primitives[0].type = shape_msgs::msg::SolidPrimitive::BOX;
+    // collision_objects[1].primitives[0].dimensions = {1, 1, 0.79}; 
+    // collision_objects[1].primitive_poses.resize(1);
+    // collision_objects[1].primitive_poses[0].position.x = -0.3;
+    // collision_objects[1].primitive_poses[0].position.y = 0.0;
+    // collision_objects[1].primitive_poses[0].position.z = 0.4;
+    // collision_objects[1].operation = moveit_msgs::msg::CollisionObject::ADD;
+
+
+    // Add objects to the scene
+    // planning_scene_interface.applyCollisionObjects(collision_objects);
+    // RCLCPP_INFO(logger, "Collision objects added to the planning scene.");
+
+    // Planning
+    MoveGroupInterface::Plan my_plan;
+    bool success = (move_group.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
+    RCLCPP_INFO(logger, "Visualizing plan: %s", success ? "SUCCESS" : "FAILED");
+
+    // Execution
+    if (success)
+    {
+        move_group.move();
+        RCLCPP_INFO(logger, "Motion execution completed.");
+    }
+    else
+    {
+        RCLCPP_ERROR(logger, "Motion planning failed!");
+    }
+
+    // stop the spinner
+    rclcpp::shutdown();
+    spinner_thread.join();
+    return 0;
+}

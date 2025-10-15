@@ -35,6 +35,9 @@ endif()
 add_executable(test_ik src/test_ik.cpp)
 ament_target_dependencies(test_ik rclcpp moveit_ros_planning_interface sensor_msgs geometry_msgs)
 
+add_executable(test_ik_real src/test_ik_real.cpp)
+ament_target_dependencies(test_ik_real rclcpp moveit_ros_planning_interface sensor_msgs geometry_msgs)
+
 add_executable(moveit_pose_action_server src/moveit_pose_action_server.cpp)
 ament_target_dependencies(moveit_pose_action_server
   rclcpp 
@@ -52,6 +55,11 @@ install(DIRECTORY launch urdf config meshes worlds rviz
 
 install(TARGETS 
   test_ik
+  DESTINATION lib/${PROJECT_NAME}/
+)
+
+install(TARGETS 
+  test_ik_real
   DESTINATION lib/${PROJECT_NAME}/
 )
 
