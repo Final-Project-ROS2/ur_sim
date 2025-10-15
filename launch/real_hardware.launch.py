@@ -33,7 +33,8 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(ur_moveit_launch_file),
         launch_arguments={
             'ur_type': 'ur3e',
-            'launch_rviz': 'true'
+            'launch_rviz': 'true',
+            'use_sim_time': 'false'
         }.items()
     )
 

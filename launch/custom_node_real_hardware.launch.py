@@ -15,12 +15,35 @@ import os
 def generate_launch_description():
     ld = LaunchDescription()
 
-    # --- share dirs ---
-    uryt_share     = get_package_share_directory("ur_yt_sim")
-    robotiq_share  = get_package_share_directory("robotiq_description")
-    ur_share       = get_package_share_directory("ur_description")
-    gazebo_ros_dir = get_package_share_directory("gazebo_ros")
-    world_file = os.path.join(get_package_share_directory('ur_yt_sim'), 'worlds', 'world5.world')
+    moveit_pose_action_server_node = Node(
+        package='low_level_planner_executor',
+        executable='moveit_pose_action_server',
+        name='moveit_pose_action_server_node',
+        output='screen',
+        emulate_tty=True,
+        parameters=[{'real_hardware': True}],
+    )
+    ld.add_action(moveit_pose_action_server_node)
+
+    low_level_planner_executor_node = Node(
+        package='low_level_planner_executor',
+        executable='low_level_planner_executor',
+        name='low_level_planner_executor_node',
+        output='screen',
+        emulate_tty=True,
+        parameters=[{'real_hardware': True}],
+    )
+    ld.add_action(low_level_planner_executor_node)
+
+    cartesian_path_action_server_node = Node(
+        package='low_level_planner_executor',
+        executable='cartesian_path_action_server',
+        name='cartesian_path_action_server_node',
+        output='screen',
+        emulate_tty=True,
+        parameters=[{'real_hardware': True}],
+    )
+    ld.add_action(cartesian_path_action_server_node)
 
     cartesian_relative_action_server_node = Node(
         package='low_level_planner_executor',
