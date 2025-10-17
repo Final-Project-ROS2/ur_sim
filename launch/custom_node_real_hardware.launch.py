@@ -55,4 +55,23 @@ def generate_launch_description():
     )
     ld.add_action(cartesian_relative_action_server_node)
 
+    gripper_service_node = Node(
+        package='gripper_helper',
+        executable='gripper_service_server',
+        name='gripper_service_node',
+        output='screen',
+        emulate_tty=True,
+    )
+    ld.add_action(gripper_service_node)
+
+    medium_level_planner_node = Node(
+        package='medium_level_planner',
+        executable='medium_level_planner',
+        name='medium_level_planner_node',
+        output='screen',
+        emulate_tty=True,
+        parameters=[{'real_hardware': True}],
+    )
+    ld.add_action(medium_level_planner_node)
+
     return ld
