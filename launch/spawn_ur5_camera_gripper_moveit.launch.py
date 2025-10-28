@@ -256,4 +256,13 @@ def generate_launch_description():
     )
     ld.add_action(medium_level_planner_node)
 
+    high_level_planner_node = Node(
+        package='high_level_planner',
+        executable='high_level_planner',
+        name='high_level_planner_node',
+        output='screen',
+        emulate_tty=True,
+    )
+    ld.add_action(high_level_planner_node)
+
     return ld
