@@ -238,14 +238,14 @@ def generate_launch_description():
     )
     ld.add_action(cartesian_relative_action_server_node)
 
-    show_rgb_image_node = Node(
-        package='vision',
-        executable='show_rgb_image',
-        name='show_rgb_image_node',
-        output='screen',
-        emulate_tty=True
-    )
-    ld.add_action(show_rgb_image_node)
+    # show_rgb_image_node = Node(
+    #     package='vision',
+    #     executable='show_rgb_image',
+    #     name='show_rgb_image_node',
+    #     output='screen',
+    #     emulate_tty=True
+    # )
+    # ld.add_action(show_rgb_image_node)
 
     medium_level_planner_node = Node(
         package='medium_level_planner',
