@@ -238,15 +238,6 @@ def generate_launch_description():
     )
     ld.add_action(cartesian_relative_action_server_node)
 
-    # show_rgb_image_node = Node(
-    #     package='vision',
-    #     executable='show_rgb_image',
-    #     name='show_rgb_image_node',
-    #     output='screen',
-    #     emulate_tty=True
-    # )
-    # ld.add_action(show_rgb_image_node)
-
     asr_node = Node(
         package='asr',
         executable='asr_service',
@@ -255,6 +246,15 @@ def generate_launch_description():
         emulate_tty=True,
     )
     ld.add_action(asr_node)
+
+    asr_connector_node = Node(
+        package='asr',
+        executable='asr_connector',
+        name='asr_connector_node',
+        output='screen',
+        emulate_tty=True,
+    )
+    ld.add_action(asr_connector_node)
 
     medium_level_planner_node = Node(
         package='medium_level_planner',
