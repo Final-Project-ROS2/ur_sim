@@ -247,6 +247,15 @@ def generate_launch_description():
     # )
     # ld.add_action(show_rgb_image_node)
 
+    asr_node = Node(
+        package='asr',
+        executable='asr_service',
+        name='asr_node',
+        output='screen',
+        emulate_tty=True,
+    )
+    ld.add_action(asr_node)
+
     medium_level_planner_node = Node(
         package='medium_level_planner',
         executable='medium_level_planner',
