@@ -936,6 +936,13 @@
             </mesh>
           </geometry>
         </visual>
+        <sensor name='my_contact' type='contact'>
+          <plugin name='my_plugin' filename='libcontact.so'/>
+          <contact>
+            <collision>robotiq_85_right_finger_tip_link_collision</collision>
+            <topic>__default_topic__</topic>
+          </contact>
+        </sensor>
         <self_collide>0</self_collide>
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
