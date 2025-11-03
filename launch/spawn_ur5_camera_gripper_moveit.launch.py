@@ -188,15 +188,6 @@ def generate_launch_description():
     )
     ld.add_action(contact_listener)
 
-    contact_listener_wrapper = Node(
-            package='gripper_helper',          
-            executable='contact_listener_wrapper',
-            name='contact_listener_wrapper_node',
-            output='screen',
-            emulate_tty=True,
-    )
-    ld.add_action(contact_listener_wrapper)
-
     # moveit_pose_action_server_node = Node(
     #     package='ur_yt_sim',
     #     executable='moveit_pose_action_server',
