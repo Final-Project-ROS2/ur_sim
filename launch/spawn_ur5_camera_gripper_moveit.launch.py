@@ -274,4 +274,13 @@ def generate_launch_description():
     )
     ld.add_action(high_level_planner_node)
 
+    plan_complex_cartesian_steps_node = Node(
+        package='complex_low_level_planner',
+        executable='plan_complex_cartesian_steps_node',
+        name='plan_complex_cartesian_steps_node',
+        output='screen',
+        emulate_tty=True,
+    )
+    ld.add_action(plan_complex_cartesian_steps_node)
+
     return ld
