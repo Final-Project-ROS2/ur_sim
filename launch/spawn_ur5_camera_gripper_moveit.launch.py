@@ -283,4 +283,40 @@ def generate_launch_description():
     )
     ld.add_action(plan_complex_cartesian_steps_node)
 
+    simple_sam_detector_node = Node(
+        package='vision',
+        executable='simple_sam_detector',
+        name='simple_sam_detector_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(simple_sam_detector_node)
+
+    clip_classifier_node = Node(
+        package='vision',
+        executable='clip_classifier',
+        name='clip_classifier_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(clip_classifier_node)
+
+    graspnet_detector_node = Node(
+        package='vision',
+        executable='graspnet_detector',
+        name='graspnet_detector_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(graspnet_detector_node)
+
+    scene_understanding_node = Node(
+        package='vision',
+        executable='scene_understanding',
+        name='scene_understanding_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(scene_understanding_node)
+
     return ld
