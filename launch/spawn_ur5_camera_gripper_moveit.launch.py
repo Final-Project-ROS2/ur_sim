@@ -46,10 +46,12 @@ def generate_launch_description():
     # --- args ---
     with_rviz     = DeclareLaunchArgument("with_rviz", default_value="true")
     with_octomap  = DeclareLaunchArgument("with_octomap", default_value="true")  # << NEW
+    pddl = DeclareLaunchArgument("pddl", default_value="false")
     x_arg = DeclareLaunchArgument("x", default_value="0")
     y_arg = DeclareLaunchArgument("y", default_value="0")
     z_arg = DeclareLaunchArgument("z", default_value="0")
     ld.add_action(with_rviz); ld.add_action(with_octomap)
+    ld.add_action(pddl)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
 
     # --- MoveIt config ---
@@ -271,8 +273,19 @@ def generate_launch_description():
         name='high_level_planner_node',
         output='screen',
         emulate_tty=True,
+        condition=UnlessCondition(LaunchConfiguration("pddl")), 
     )
     ld.add_action(high_level_planner_node)
+
+    high_level_planner_pddl_node = Node(
+        package='high_level_pddl_planner',
+        executable='pddl_planner_node',
+        name='high_level_planner_pddl_node',
+        output='screen',
+        emulate_tty=True,
+        condition=IfCondition(LaunchConfiguration("pddl")),
+    )
+    ld.add_action(high_level_planner_pddl_node)
 
     plan_complex_cartesian_steps_node = Node(
         package='complex_low_level_planner',
