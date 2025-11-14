@@ -8,11 +8,10 @@ from launch.event_handlers import OnProcessStart
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch.substitutions import PathJoinSubstitution
 from ament_index_python.packages import get_package_share_directory
 from moveit_configs_utils import MoveItConfigsBuilder
 import os
-
-WORLD_FILE = 'world_default.world'
 
 def generate_launch_description():
     ld = LaunchDescription()
@@ -22,7 +21,11 @@ def generate_launch_description():
     robotiq_share  = get_package_share_directory("robotiq_description")
     ur_share       = get_package_share_directory("ur_description")
     gazebo_ros_dir = get_package_share_directory("gazebo_ros")
-    world_file = os.path.join(get_package_share_directory('ur_yt_sim'), 'worlds', WORLD_FILE)
+    world_file = PathJoinSubstitution([
+        get_package_share_directory("ur_yt_sim"),
+        "worlds",
+        LaunchConfiguration("world_file")
+    ])
 
     # --- ENV Gazebo ---
     ld.add_action(SetEnvironmentVariable(
@@ -49,11 +52,13 @@ def generate_launch_description():
     with_rviz     = DeclareLaunchArgument("with_rviz", default_value="true")
     with_octomap  = DeclareLaunchArgument("with_octomap", default_value="true")  # << NEW
     pddl = DeclareLaunchArgument("pddl", default_value="false")
+    world_arg = DeclareLaunchArgument("world_file", default_value="world_default.world")
     x_arg = DeclareLaunchArgument("x", default_value="0")
     y_arg = DeclareLaunchArgument("y", default_value="0")
     z_arg = DeclareLaunchArgument("z", default_value="0")
     ld.add_action(with_rviz); ld.add_action(with_octomap)
     ld.add_action(pddl)
+    ld.add_action(world_arg)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
 
     # --- MoveIt config ---
