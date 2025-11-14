@@ -53,12 +53,18 @@ def generate_launch_description():
     with_octomap  = DeclareLaunchArgument("with_octomap", default_value="true")  # << NEW
     pddl = DeclareLaunchArgument("pddl", default_value="false")
     world_arg = DeclareLaunchArgument("world_file", default_value="world_default.world")
+    use_ollama = DeclareLaunchArgument(
+    "use_ollama",
+    default_value="false",
+    description="If true, use local Ollama LLM instead of Google Gemini."
+    )
     x_arg = DeclareLaunchArgument("x", default_value="0")
     y_arg = DeclareLaunchArgument("y", default_value="0")
     z_arg = DeclareLaunchArgument("z", default_value="0")
     ld.add_action(with_rviz); ld.add_action(with_octomap)
     ld.add_action(pddl)
     ld.add_action(world_arg)
+    ld.add_action(use_ollama)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
 
     # --- MoveIt config ---
@@ -271,6 +277,9 @@ def generate_launch_description():
         name='medium_level_planner_node',
         output='screen',
         emulate_tty=True,
+        parameters=[{
+            "use_ollama": LaunchConfiguration("use_ollama"),
+        }]
     )
     ld.add_action(medium_level_planner_node)
 
@@ -280,7 +289,10 @@ def generate_launch_description():
         name='high_level_planner_node',
         output='screen',
         emulate_tty=True,
-        condition=UnlessCondition(LaunchConfiguration("pddl")), 
+        condition=UnlessCondition(LaunchConfiguration("pddl")),
+        parameters=[{
+            "use_ollama": LaunchConfiguration("use_ollama"),
+        }]
     )
     ld.add_action(high_level_planner_node)
 
@@ -291,6 +303,9 @@ def generate_launch_description():
         output='screen',
         emulate_tty=True,
         condition=IfCondition(LaunchConfiguration("pddl")),
+        parameters=[{
+            "use_ollama": LaunchConfiguration("use_ollama"),
+        }]
     )
     ld.add_action(high_level_planner_pddl_node)
 
