@@ -12,6 +12,8 @@ from ament_index_python.packages import get_package_share_directory
 from moveit_configs_utils import MoveItConfigsBuilder
 import os
 
+WORLD_FILE = 'world_default.world'
+
 def generate_launch_description():
     ld = LaunchDescription()
 
@@ -20,7 +22,7 @@ def generate_launch_description():
     robotiq_share  = get_package_share_directory("robotiq_description")
     ur_share       = get_package_share_directory("ur_description")
     gazebo_ros_dir = get_package_share_directory("gazebo_ros")
-    world_file = os.path.join(get_package_share_directory('ur_yt_sim'), 'worlds', 'world4.world')
+    world_file = os.path.join(get_package_share_directory('ur_yt_sim'), 'worlds', WORLD_FILE)
 
     # --- ENV Gazebo ---
     ld.add_action(SetEnvironmentVariable(
