@@ -6,7 +6,7 @@ from launch.actions import (
 from launch.conditions import IfCondition, UnlessCondition
 from launch.event_handlers import OnProcessStart
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch.substitutions import PathJoinSubstitution
 from ament_index_python.packages import get_package_share_directory
@@ -58,11 +58,13 @@ def generate_launch_description():
     default_value="false",
     description="If true, use local Ollama LLM instead of Google Gemini."
     )
+    real_hardware = DeclareLaunchArgument("real_hardware", default_value="false")
     x_arg = DeclareLaunchArgument("x", default_value="0")
     y_arg = DeclareLaunchArgument("y", default_value="0")
     z_arg = DeclareLaunchArgument("z", default_value="0")
     ld.add_action(with_rviz); ld.add_action(with_octomap)
     ld.add_action(pddl)
+    ld.add_action(real_hardware)
     ld.add_action(world_arg)
     ld.add_action(use_ollama)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
@@ -94,11 +96,14 @@ def generate_launch_description():
         .to_moveit_configs()
     )
 
+    # --- Simulation Launch Nodes ---
+
     # --- Gazebo ---
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(gazebo_ros_dir, "launch", "gazebo.launch.py")),
-        launch_arguments={"use_sim_time":"true", "gui":"true", "paused":"true", "world": world_file}.items()
+        launch_arguments={"use_sim_time":"true", "gui":"true", "paused":"true", "world": world_file}.items(),
         # launch_arguments={"use_sim_time":"true", "gui":"true", "paused":"true"}.items()
+        condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
     ld.add_action(gazebo)
 
@@ -108,6 +113,7 @@ def generate_launch_description():
         executable="robot_state_publisher",
         parameters=[moveit_config.robot_description, {"use_sim_time": True}],
         output="screen",
+        condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
     ld.add_action(robot_state_publisher)
 
@@ -123,15 +129,22 @@ def generate_launch_description():
             "-z", LaunchConfiguration("z"),
         ],
         output="screen",
+        condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
     ld.add_action(TimerAction(period=3.0, actions=[spawn]))
 
     jsb  = Node(package="controller_manager", executable="spawner",
-                arguments=["joint_state_broadcaster","--controller-manager","/controller_manager"], output="screen")
+                arguments=["joint_state_broadcaster","--controller-manager","/controller_manager"], output="screen",
+                condition=UnlessCondition(LaunchConfiguration("real_hardware"))
+            )
     arm  = Node(package="controller_manager", executable="spawner",
-                arguments=["joint_trajectory_controller","--controller-manager","/controller_manager"], output="screen")
+                arguments=["joint_trajectory_controller","--controller-manager","/controller_manager"], output="screen",
+                condition=UnlessCondition(LaunchConfiguration("real_hardware"))
+            )
     grip = Node(package="controller_manager", executable="spawner",
-                arguments=["gripper_position_controller","--controller-manager","/controller_manager"], output="screen")
+                arguments=["gripper_position_controller","--controller-manager","/controller_manager"], output="screen",
+                condition=UnlessCondition(LaunchConfiguration("real_hardware"))
+            )
 
     ld.add_action(RegisterEventHandler(
         OnProcessStart(target_action=spawn, on_start=[
@@ -152,21 +165,17 @@ def generate_launch_description():
             moveit_config.robot_description_kinematics,
             {"use_sim_time": True},
         ],
-        condition=IfCondition(LaunchConfiguration("with_rviz"))
+        condition=IfCondition(
+            PythonExpression([
+                LaunchConfiguration("with_rviz"), " and not ",
+                LaunchConfiguration("real_hardware")
+            ])
+        )
     )
     ld.add_action(rviz)
 
     mg_params = moveit_config.to_dict()
     mg_params.update({"use_sim_time": True})
-
-    move_group_with_octomap = Node(
-        package="moveit_ros_move_group",
-        executable="move_group",
-        output="screen",
-        parameters=[mg_params],
-        arguments=["--ros-args","--log-level","info"],
-        condition=IfCondition(LaunchConfiguration("with_octomap")),   # << NEW
-    )
 
     mg_params_no_sensors = dict(mg_params)
     mg_params_no_sensors.pop("sensors", None)
@@ -177,12 +186,9 @@ def generate_launch_description():
         output="screen",
         parameters=[mg_params_no_sensors],
         arguments=["--ros-args","--log-level","info"],
-        # condition=UnlessCondition(LaunchConfiguration("with_octomap")),
+        condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
 
-    
-
-    # ld.add_action(move_group_with_octomap)
     ld.add_action(move_group_no_octomap)
 
     gripper_wrapper = Node(
@@ -191,6 +197,7 @@ def generate_launch_description():
             name='gripper_wrapper_node',
             output='screen',
             emulate_tty=True,                      
+            condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
     ld.add_action(gripper_wrapper)
 
@@ -200,18 +207,57 @@ def generate_launch_description():
             name='contact_listener_node',
             output='screen',
             emulate_tty=True,                      
+            condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
     ld.add_action(contact_listener)
 
-    # moveit_pose_action_server_node = Node(
-    #     package='ur_yt_sim',
-    #     executable='moveit_pose_action_server',
-    #     name='moveit_pose_action_server_node',
-    #     output='screen',
-    #     emulate_tty=True,
-    #     parameters=[{'use_sim_time': True}]
-    # )
-    # ld.add_action(moveit_pose_action_server_node)
+    # --- Real Hardware Launch Nodes ---
+
+    # --- UR Driver Launch ---
+    ur_driver_launch_file = os.path.join(
+        get_package_share_directory('ur_robot_driver'),
+        'launch',
+        'ur_control.launch.py'
+    )
+
+    ur_driver_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(ur_driver_launch_file),
+        launch_arguments={
+            'ur_type': 'ur3e',
+            'robot_ip': '10.10.0.60',
+            'kinematics_params_file': os.path.join(os.environ['HOME'], 'my_robot_calibration.yaml')
+        }.items(),
+        condition=IfCondition(LaunchConfiguration("real_hardware"))
+    )
+    ld.add_action(ur_driver_launch)
+
+    # --- UR MoveIt Launch ---
+    ur_moveit_launch_file = os.path.join(
+        get_package_share_directory('ur_moveit_config'),
+        'launch',
+        'ur_moveit.launch.py'
+    )
+
+    ur_moveit_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(ur_moveit_launch_file),
+        launch_arguments={
+            'ur_type': 'ur3e',
+            'launch_rviz': 'true',
+            'use_sim_time': 'false'
+        }.items(),
+        condition=IfCondition(LaunchConfiguration("real_hardware"))
+    )
+    ld.add_action(ur_moveit_launch)
+
+    gripper_service_node = Node(
+        package='gripper_helper',
+        executable='gripper_service_server',
+        name='gripper_service_node',
+        output='screen',
+        emulate_tty=True,
+        condition=IfCondition(LaunchConfiguration("real_hardware")),
+    )
+    ld.add_action(gripper_service_node)
 
     moveit_pose_action_server_node = Node(
         package='low_level_planner_executor',
@@ -219,7 +265,14 @@ def generate_launch_description():
         name='moveit_pose_action_server_node',
         output='screen',
         emulate_tty=True,
-        parameters=[{'use_sim_time': True}],
+        parameters=[
+            {
+                "use_sim_time": PythonExpression([
+                    "not ", LaunchConfiguration("real_hardware")
+                ]),
+                "real_hardware": LaunchConfiguration("real_hardware"),
+            }
+        ],
     )
     ld.add_action(moveit_pose_action_server_node)
 
@@ -229,7 +282,14 @@ def generate_launch_description():
         name='low_level_planner_executor_node',
         output='screen',
         emulate_tty=True,
-        parameters=[{'use_sim_time': True}],
+        parameters=[
+            {
+                "use_sim_time": PythonExpression([
+                    "not ", LaunchConfiguration("real_hardware")
+                ]),
+                "real_hardware": LaunchConfiguration("real_hardware"),
+            }
+        ],
     )
     ld.add_action(low_level_planner_executor_node)
 
@@ -239,7 +299,14 @@ def generate_launch_description():
         name='cartesian_path_action_server_node',
         output='screen',
         emulate_tty=True,
-        parameters=[{'use_sim_time': True}],
+        parameters=[
+            {
+                "use_sim_time": PythonExpression([
+                    "not ", LaunchConfiguration("real_hardware")
+                ]),
+                "real_hardware": LaunchConfiguration("real_hardware"),
+            }
+        ],
     )
     ld.add_action(cartesian_path_action_server_node)
 
@@ -249,27 +316,16 @@ def generate_launch_description():
         name='cartesian_relative_action_server_node',
         output='screen',
         emulate_tty=True,
-        parameters=[{'use_sim_time': True}],
+        parameters=[
+            {
+                "use_sim_time": PythonExpression([
+                    "not ", LaunchConfiguration("real_hardware")
+                ]),
+                "real_hardware": LaunchConfiguration("real_hardware"),
+            }
+        ],
     )
     ld.add_action(cartesian_relative_action_server_node)
-
-    # asr_node = Node(
-    #     package='asr',
-    #     executable='asr_service',
-    #     name='asr_node',
-    #     output='screen',
-    #     emulate_tty=True,
-    # )
-    # ld.add_action(asr_node)
-
-    # asr_connector_node = Node(
-    #     package='asr',
-    #     executable='asr_connector',
-    #     name='asr_connector_node',
-    #     output='screen',
-    #     emulate_tty=True,
-    # )
-    # ld.add_action(asr_connector_node)
 
     medium_level_planner_node = Node(
         package='medium_level_planner',
@@ -277,9 +333,15 @@ def generate_launch_description():
         name='medium_level_planner_node',
         output='screen',
         emulate_tty=True,
-        parameters=[{
-            "use_ollama": LaunchConfiguration("use_ollama"),
-        }]
+        parameters=[
+            {
+                "use_sim_time": PythonExpression([
+                    "not ", LaunchConfiguration("real_hardware")
+                ]),
+                "real_hardware": LaunchConfiguration("real_hardware"),
+                "use_ollama": LaunchConfiguration("use_ollama"),
+            }
+        ],
     )
     ld.add_action(medium_level_planner_node)
 
@@ -292,6 +354,7 @@ def generate_launch_description():
         condition=UnlessCondition(LaunchConfiguration("pddl")),
         parameters=[{
             "use_ollama": LaunchConfiguration("use_ollama"),
+            "real_hardware": LaunchConfiguration("real_hardware"),
         }]
     )
     ld.add_action(high_level_planner_node)
@@ -305,6 +368,7 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration("pddl")),
         parameters=[{
             "use_ollama": LaunchConfiguration("use_ollama"),
+            "real_hardware": LaunchConfiguration("real_hardware"),
         }]
     )
     ld.add_action(high_level_planner_pddl_node)

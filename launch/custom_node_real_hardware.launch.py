@@ -15,6 +15,14 @@ import os
 def generate_launch_description():
     ld = LaunchDescription()
 
+    # --- args ---
+    pddl = DeclareLaunchArgument("pddl", default_value="false")
+    use_ollama = DeclareLaunchArgument(
+    "use_ollama",
+    default_value="false",
+    description="If true, use local Ollama LLM instead of Google Gemini."
+    )
+
     moveit_pose_action_server_node = Node(
         package='low_level_planner_executor',
         executable='moveit_pose_action_server',
@@ -70,8 +78,57 @@ def generate_launch_description():
         name='medium_level_planner_node',
         output='screen',
         emulate_tty=True,
-        parameters=[{'real_hardware': True}],
+        parameters=[{
+            "use_ollama": LaunchConfiguration("use_ollama"),
+            "real_hardware": True,
+        }]
     )
     ld.add_action(medium_level_planner_node)
+
+    high_level_planner_node = Node(
+        package='high_level_planner',
+        executable='high_level_planner',
+        name='high_level_planner_node',
+        output='screen',
+        emulate_tty=True,
+        condition=UnlessCondition(LaunchConfiguration("pddl")),
+        parameters=[{
+            "use_ollama": LaunchConfiguration("use_ollama"),
+            "real_hardware": True,
+        }]
+    )
+    ld.add_action(high_level_planner_node)
+
+    high_level_planner_pddl_node = Node(
+        package='high_level_pddl_planner',
+        executable='pddl_planner_node',
+        name='high_level_planner_pddl_node',
+        output='screen',
+        emulate_tty=True,
+        condition=IfCondition(LaunchConfiguration("pddl")),
+        parameters=[{
+            "use_ollama": LaunchConfiguration("use_ollama"),
+            "real_hardware": True,
+        }]
+    )
+    ld.add_action(high_level_planner_pddl_node)
+
+    pddl_state_node = Node(
+        package='high_level_pddl_planner',
+        executable='pddl_state_node',
+        name='pddl_state_node',
+        output='screen',
+        emulate_tty=True,
+    )
+    ld.add_action(pddl_state_node)
+
+    plan_complex_cartesian_steps_node = Node(
+        package='complex_low_level_planner',
+        executable='plan_complex_cartesian_steps_node',
+        name='plan_complex_cartesian_steps_node',
+        output='screen',
+        emulate_tty=True,
+    )
+    ld.add_action(plan_complex_cartesian_steps_node)
 
     return ld
