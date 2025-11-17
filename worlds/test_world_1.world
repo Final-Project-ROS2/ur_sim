@@ -132,7 +132,7 @@
           </surface>
         </collision>
         <collision name='base_link_fixed_joint_lump__camera_link_collision_1'>
-          <pose>0.5 0 1.2 3.14159 1.57079 3.14159</pose>
+          <pose>0.8 0 1.2 3.14159 1.57079 3.14159</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -163,7 +163,7 @@
           </geometry>
         </visual>
         <visual name='base_link_fixed_joint_lump__camera_link_visual_1'>
-          <pose>0.5 0 1.2 3.14159 1.57079 3.14159</pose>
+          <pose>0.8 0 1.2 3.14159 1.57079 3.14159</pose>
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
@@ -189,7 +189,7 @@
           <plugin name='camera_controller' filename='libgazebo_ros_camera.so'>
             <frame_name>camera_optical_link</frame_name>
           </plugin>
-          <pose>0.5 0 1.2 3.14159 1.57079 3.14159</pose>
+          <pose>0.8 0 1.2 3.14159 1.57079 3.14159</pose>
         </sensor>
         <self_collide>0</self_collide>
         <enable_wind>0</enable_wind>
