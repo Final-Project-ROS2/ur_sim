@@ -4,9 +4,10 @@ from launch.actions import (
     SetEnvironmentVariable, TimerAction
 )
 from launch.conditions import IfCondition, UnlessCondition
+from launch.substitutions import AndSubstitution
 from launch.event_handlers import OnProcessStart
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.substitutions import LaunchConfiguration, PythonExpression, NotEqualsSubstitution
 from launch_ros.actions import Node
 from launch.substitutions import PathJoinSubstitution
 from ament_index_python.packages import get_package_share_directory
@@ -54,9 +55,9 @@ def generate_launch_description():
     pddl = DeclareLaunchArgument("pddl", default_value="false")
     world_arg = DeclareLaunchArgument("world_file", default_value="world_default.world")
     use_ollama = DeclareLaunchArgument(
-    "use_ollama",
-    default_value="false",
-    description="If true, use local Ollama LLM instead of Google Gemini."
+        "use_ollama",
+        default_value="false",
+        description="If true, use local Ollama LLM instead of Google Gemini."
     )
     real_hardware = DeclareLaunchArgument("real_hardware", default_value="false")
     x_arg = DeclareLaunchArgument("x", default_value="0")
@@ -166,10 +167,10 @@ def generate_launch_description():
             {"use_sim_time": True},
         ],
         condition=IfCondition(
-            PythonExpression([
-                LaunchConfiguration("with_rviz"), " and not ",
-                LaunchConfiguration("real_hardware")
-            ])
+            AndSubstitution(
+                LaunchConfiguration("with_rviz"),
+                NotEqualsSubstitution(LaunchConfiguration("real_hardware"), "true")
+            )
         )
     )
     ld.add_action(rviz)
@@ -192,21 +193,21 @@ def generate_launch_description():
     ld.add_action(move_group_no_octomap)
 
     gripper_wrapper = Node(
-            package='gripper_helper',          
+            package='gripper_helper',
             executable='wrapper_gripper_node',
             name='gripper_wrapper_node',
             output='screen',
-            emulate_tty=True,                      
+            emulate_tty=True,
             condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
     ld.add_action(gripper_wrapper)
 
     contact_listener = Node(
-            package='gripper_helper',          
+            package='gripper_helper',
             executable='contact_listener',
             name='contact_listener_node',
             output='screen',
-            emulate_tty=True,                      
+            emulate_tty=True,
             condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
     ld.add_action(contact_listener)
@@ -267,9 +268,9 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[
             {
-                "use_sim_time": PythonExpression([
-                    "not ", LaunchConfiguration("real_hardware")
-                ]),
+                "use_sim_time": NotEqualsSubstitution(
+                    LaunchConfiguration("real_hardware"), "true"
+                ),
                 "real_hardware": LaunchConfiguration("real_hardware"),
             }
         ],
@@ -284,9 +285,9 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[
             {
-                "use_sim_time": PythonExpression([
-                    "not ", LaunchConfiguration("real_hardware")
-                ]),
+                "use_sim_time": NotEqualsSubstitution(
+                    LaunchConfiguration("real_hardware"), "true"
+                ),
                 "real_hardware": LaunchConfiguration("real_hardware"),
             }
         ],
@@ -301,9 +302,9 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[
             {
-                "use_sim_time": PythonExpression([
-                    "not ", LaunchConfiguration("real_hardware")
-                ]),
+                "use_sim_time": NotEqualsSubstitution(
+                    LaunchConfiguration("real_hardware"), "true"
+                ),
                 "real_hardware": LaunchConfiguration("real_hardware"),
             }
         ],
@@ -318,9 +319,9 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[
             {
-                "use_sim_time": PythonExpression([
-                    "not ", LaunchConfiguration("real_hardware")
-                ]),
+                "use_sim_time": NotEqualsSubstitution(
+                    LaunchConfiguration("real_hardware"), "true"
+                ),
                 "real_hardware": LaunchConfiguration("real_hardware"),
             }
         ],
@@ -335,9 +336,9 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[
             {
-                "use_sim_time": PythonExpression([
-                    "not ", LaunchConfiguration("real_hardware")
-                ]),
+                "use_sim_time": NotEqualsSubstitution(
+                    LaunchConfiguration("real_hardware"), "true"
+                ),
                 "real_hardware": LaunchConfiguration("real_hardware"),
                 "use_ollama": LaunchConfiguration("use_ollama"),
             }
