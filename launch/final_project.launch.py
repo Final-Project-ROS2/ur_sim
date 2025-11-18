@@ -60,6 +60,7 @@ def generate_launch_description():
         description="If true, use local Ollama LLM instead of Google Gemini."
     )
     real_hardware = DeclareLaunchArgument("real_hardware", default_value="false")
+    confirm = DeclareLaunchArgument("confirm", default_value="true")
     x_arg = DeclareLaunchArgument("x", default_value="0")
     y_arg = DeclareLaunchArgument("y", default_value="0")
     z_arg = DeclareLaunchArgument("z", default_value="0")
@@ -68,6 +69,7 @@ def generate_launch_description():
     ld.add_action(real_hardware)
     ld.add_action(world_arg)
     ld.add_action(use_ollama)
+    ld.add_action(confirm)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
 
     # --- MoveIt config ---
@@ -356,6 +358,7 @@ def generate_launch_description():
         parameters=[{
             "use_ollama": LaunchConfiguration("use_ollama"),
             "real_hardware": LaunchConfiguration("real_hardware"),
+            "confirm": LaunchConfiguration("confirm"),
         }]
     )
     ld.add_action(high_level_planner_node)
@@ -370,6 +373,7 @@ def generate_launch_description():
         parameters=[{
             "use_ollama": LaunchConfiguration("use_ollama"),
             "real_hardware": LaunchConfiguration("real_hardware"),
+            "confirm": LaunchConfiguration("confirm"),
         }]
     )
     ld.add_action(high_level_planner_pddl_node)
