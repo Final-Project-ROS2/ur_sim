@@ -432,9 +432,6 @@ def generate_launch_description():
     )
     ld.add_action(scene_understanding_node)
 
-<<<<<<< Updated upstream:launch/final_project.launch.py
-    return ld
-=======
     pixel_to_real_node = Node(
         package='vision',
         executable='pixel_to_real_service',
@@ -444,5 +441,12 @@ def generate_launch_description():
     )
     ld.add_action(pixel_to_real_node)
 
+    find_object_node = Node(
+        package='vision',
+        executable='find_object_service',
+        name='find_object_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(find_object_node)
     return ld
->>>>>>> Stashed changes:launch/spawn_ur5_camera_gripper_moveit.launch.py
