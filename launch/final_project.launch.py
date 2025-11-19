@@ -432,4 +432,17 @@ def generate_launch_description():
     )
     ld.add_action(scene_understanding_node)
 
+<<<<<<< Updated upstream:launch/final_project.launch.py
     return ld
+=======
+    pixel_to_real_node = Node(
+        package='vision',
+        executable='pixel_to_real_service',
+        name='pixel_to_real_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(pixel_to_real_node)
+
+    return ld
+>>>>>>> Stashed changes:launch/spawn_ur5_camera_gripper_moveit.launch.py
