@@ -18,15 +18,26 @@ def generate_launch_description():
     )
     real_hardware_arg = DeclareLaunchArgument("real_hardware", default_value="true")
 
+    # PDDL initial state args
+    is_home_arg = DeclareLaunchArgument("is_home", default_value="true")
+    is_ready_arg = DeclareLaunchArgument("is_ready", default_value="false")
+    gripper_is_open_arg = DeclareLaunchArgument("gripper_is_open", default_value="true")
+
     # Add declare statements
     ld.add_action(pddl_arg)
     ld.add_action(use_ollama_arg)
     ld.add_action(real_hardware_arg)
+    ld.add_action(is_home_arg)
+    ld.add_action(is_ready_arg)
+    ld.add_action(gripper_is_open_arg)
 
     # LaunchConfigurations for forwarding
     pddl = LaunchConfiguration("pddl")
     use_ollama = LaunchConfiguration("use_ollama")
     real_hardware = LaunchConfiguration("real_hardware")
+    is_home = LaunchConfiguration("is_home")
+    is_ready = LaunchConfiguration("is_ready")
+    gripper_is_open = LaunchConfiguration("gripper_is_open")
 
     # --- UR Driver Launch ---
     ur_driver_launch_file = os.path.join(
@@ -75,6 +86,9 @@ def generate_launch_description():
             'pddl': pddl,
             'use_ollama': use_ollama,
             'real_hardware': real_hardware,
+            'is_home': is_home,
+            'is_ready': is_ready,
+            'gripper_is_open': gripper_is_open
         }.items()
     )
     ld.add_action(custom_node_launch)
