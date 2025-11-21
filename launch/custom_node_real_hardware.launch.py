@@ -26,7 +26,7 @@ def generate_launch_description():
     # PDDL initial state args
     is_home = DeclareLaunchArgument("is_home", default_value="true")
     is_ready = DeclareLaunchArgument("is_ready", default_value="false")
-    gripper_is_open = DeclareLaunchArgument("gripper_is_open", default_value="true
+    gripper_is_open = DeclareLaunchArgument("gripper_is_open", default_value="true")
 
     moveit_pose_action_server_node = Node(
         package='low_level_planner_executor',

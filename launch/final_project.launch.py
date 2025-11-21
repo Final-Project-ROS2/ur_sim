@@ -53,7 +53,7 @@ def generate_launch_description():
     with_rviz     = DeclareLaunchArgument("with_rviz", default_value="true")
     with_octomap  = DeclareLaunchArgument("with_octomap", default_value="true")  # << NEW
     pddl = DeclareLaunchArgument("pddl", default_value="false")
-    world_arg = DeclareLaunchArgument("world_file", default_value="world_default.world")
+    world_arg = DeclareLaunchArgument("world_file", default_value="test_world_find_object.world")
     use_ollama = DeclareLaunchArgument(
         "use_ollama",
         default_value="false",
@@ -61,6 +61,13 @@ def generate_launch_description():
     )
     real_hardware = DeclareLaunchArgument("real_hardware", default_value="false")
     confirm = DeclareLaunchArgument("confirm", default_value="true")
+    
+    # PDDL initial state args
+    is_home_arg = DeclareLaunchArgument("is_home", default_value="true")
+    is_ready_arg = DeclareLaunchArgument("is_ready", default_value="false")
+    gripper_is_open_arg = DeclareLaunchArgument("gripper_is_open", default_value="true")
+
+    # Add declare statements
     x_arg = DeclareLaunchArgument("x", default_value="0")
     y_arg = DeclareLaunchArgument("y", default_value="0")
     z_arg = DeclareLaunchArgument("z", default_value="0")
@@ -70,6 +77,9 @@ def generate_launch_description():
     ld.add_action(world_arg)
     ld.add_action(use_ollama)
     ld.add_action(confirm)
+    ld.add_action(is_home_arg)
+    ld.add_action(is_ready_arg)
+    ld.add_action(gripper_is_open_arg)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
 
     # --- MoveIt config ---
@@ -384,6 +394,11 @@ def generate_launch_description():
         name='pddl_state_node',
         output='screen',
         emulate_tty=True,
+        parameters=[{
+            "is_home": LaunchConfiguration("is_home"),
+            "is_ready": LaunchConfiguration("is_ready"),
+            "gripper_is_open": LaunchConfiguration("gripper_is_open"),
+        }]
     )
     ld.add_action(pddl_state_node)
 
