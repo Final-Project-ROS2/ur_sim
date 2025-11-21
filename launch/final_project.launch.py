@@ -53,7 +53,7 @@ def generate_launch_description():
     with_rviz     = DeclareLaunchArgument("with_rviz", default_value="true")
     with_octomap  = DeclareLaunchArgument("with_octomap", default_value="true")  # << NEW
     pddl = DeclareLaunchArgument("pddl", default_value="false")
-    world_arg = DeclareLaunchArgument("world_file", default_value="world_default.world")
+    world_arg = DeclareLaunchArgument("world_file", default_value="test_world_find_object.world")
     use_ollama = DeclareLaunchArgument(
         "use_ollama",
         default_value="false",
