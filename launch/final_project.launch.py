@@ -464,4 +464,14 @@ def generate_launch_description():
         emulate_tty=True
     )
     ld.add_action(find_object_node)
+
+    find_object_grasp_node = Node(
+        package='vision',
+        executable='find_object_grasp_service',
+        name='find_object_grasp_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(find_object_grasp_node)
+    
     return ld
