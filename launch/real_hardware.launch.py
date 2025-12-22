@@ -21,6 +21,7 @@ def generate_launch_description():
     # PDDL initial state args
     is_home_arg = DeclareLaunchArgument("is_home", default_value="true")
     is_ready_arg = DeclareLaunchArgument("is_ready", default_value="false")
+    is_handover_arg = DeclareLaunchArgument("is_handover", default_value="false")
     gripper_is_open_arg = DeclareLaunchArgument("gripper_is_open", default_value="true")
 
     # Add declare statements
@@ -29,6 +30,7 @@ def generate_launch_description():
     ld.add_action(real_hardware_arg)
     ld.add_action(is_home_arg)
     ld.add_action(is_ready_arg)
+    ld.add_action(is_handover_arg)
     ld.add_action(gripper_is_open_arg)
 
     # LaunchConfigurations for forwarding
@@ -37,6 +39,7 @@ def generate_launch_description():
     real_hardware = LaunchConfiguration("real_hardware")
     is_home = LaunchConfiguration("is_home")
     is_ready = LaunchConfiguration("is_ready")
+    is_handover = LaunchConfiguration("is_handover")
     gripper_is_open = LaunchConfiguration("gripper_is_open")
 
     # --- UR Driver Launch ---
@@ -88,6 +91,7 @@ def generate_launch_description():
             'real_hardware': real_hardware,
             'is_home': is_home,
             'is_ready': is_ready,
+            'is_handover': is_handover,
             'gripper_is_open': gripper_is_open
         }.items()
     )

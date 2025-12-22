@@ -26,6 +26,7 @@ def generate_launch_description():
     # PDDL initial state args
     is_home = DeclareLaunchArgument("is_home", default_value="true")
     is_ready = DeclareLaunchArgument("is_ready", default_value="false")
+    is_handover = DeclareLaunchArgument("is_handover", default_value="false")
     gripper_is_open = DeclareLaunchArgument("gripper_is_open", default_value="true")
 
     moveit_pose_action_server_node = Node(
@@ -127,6 +128,7 @@ def generate_launch_description():
         parameters=[{
             "is_home": LaunchConfiguration("is_home"),
             "is_ready": LaunchConfiguration("is_ready"),
+            "is_handover": LaunchConfiguration("is_handover"),
             "gripper_is_open": LaunchConfiguration("gripper_is_open"),
         }]
     )
