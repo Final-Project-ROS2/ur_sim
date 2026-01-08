@@ -416,7 +416,12 @@ def generate_launch_description():
         executable='simple_sam_detector',
         name='simple_sam_detector_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_hardware"),
+            }
+        ],
     )
     ld.add_action(simple_sam_detector_node)
 
@@ -425,7 +430,12 @@ def generate_launch_description():
         executable='clip_classifier',
         name='clip_classifier_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_hardware"),
+            }
+        ],
     )
     ld.add_action(clip_classifier_node)
 
@@ -434,7 +444,12 @@ def generate_launch_description():
         executable='graspnet_detector',
         name='graspnet_detector_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_hardware"),
+            }
+        ],
     )
     ld.add_action(graspnet_detector_node)
 
@@ -443,7 +458,12 @@ def generate_launch_description():
         executable='scene_understanding',
         name='scene_understanding_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_hardware"),
+            }
+        ],
     )
     ld.add_action(scene_understanding_node)
 
@@ -452,7 +472,12 @@ def generate_launch_description():
         executable='pixel_to_real_service',
         name='pixel_to_real_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_hardware"),
+            }
+        ],
     )
     ld.add_action(pixel_to_real_node)
 
