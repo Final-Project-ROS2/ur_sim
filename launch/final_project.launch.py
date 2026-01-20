@@ -60,6 +60,7 @@ def generate_launch_description():
         description="If true, use local Ollama LLM instead of Google Gemini."
     )
     real_hardware = DeclareLaunchArgument("real_hardware", default_value="false")
+    real_camera = DeclareLaunchArgument("real_camera", default_value="false")
     confirm = DeclareLaunchArgument("confirm", default_value="true")
     
     # PDDL initial state args
@@ -74,6 +75,7 @@ def generate_launch_description():
     ld.add_action(with_rviz); ld.add_action(with_octomap)
     ld.add_action(pddl)
     ld.add_action(real_hardware)
+    ld.add_action(real_camera)
     ld.add_action(world_arg)
     ld.add_action(use_ollama)
     ld.add_action(confirm)
@@ -416,7 +418,12 @@ def generate_launch_description():
         executable='simple_sam_detector',
         name='simple_sam_detector_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_camera"),
+            }
+        ],
     )
     ld.add_action(simple_sam_detector_node)
 
@@ -425,7 +432,12 @@ def generate_launch_description():
         executable='clip_classifier',
         name='clip_classifier_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_camera"),
+            }
+        ],
     )
     ld.add_action(clip_classifier_node)
 
@@ -434,7 +446,12 @@ def generate_launch_description():
         executable='graspnet_detector',
         name='graspnet_detector_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_camera"),
+            }
+        ],
     )
     ld.add_action(graspnet_detector_node)
 
@@ -443,7 +460,12 @@ def generate_launch_description():
         executable='scene_understanding',
         name='scene_understanding_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_camera"),
+            }
+        ],
     )
     ld.add_action(scene_understanding_node)
 
@@ -452,7 +474,12 @@ def generate_launch_description():
         executable='pixel_to_real_service',
         name='pixel_to_real_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_camera"),
+            }
+        ],
     )
     ld.add_action(pixel_to_real_node)
 
