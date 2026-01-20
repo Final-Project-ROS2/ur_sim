@@ -60,6 +60,7 @@ def generate_launch_description():
         description="If true, use local Ollama LLM instead of Google Gemini."
     )
     real_hardware = DeclareLaunchArgument("real_hardware", default_value="false")
+    real_camera = DeclareLaunchArgument("real_camera", default_value="false")
     confirm = DeclareLaunchArgument("confirm", default_value="true")
     
     # PDDL initial state args
@@ -74,6 +75,7 @@ def generate_launch_description():
     ld.add_action(with_rviz); ld.add_action(with_octomap)
     ld.add_action(pddl)
     ld.add_action(real_hardware)
+    ld.add_action(real_camera)
     ld.add_action(world_arg)
     ld.add_action(use_ollama)
     ld.add_action(confirm)
@@ -419,7 +421,7 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[
             {
-                "real_hardware": LaunchConfiguration("real_hardware"),
+                "real_hardware": LaunchConfiguration("real_camera"),
             }
         ],
     )
@@ -433,7 +435,7 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[
             {
-                "real_hardware": LaunchConfiguration("real_hardware"),
+                "real_hardware": LaunchConfiguration("real_camera"),
             }
         ],
     )
@@ -447,7 +449,7 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[
             {
-                "real_hardware": LaunchConfiguration("real_hardware"),
+                "real_hardware": LaunchConfiguration("real_camera"),
             }
         ],
     )
@@ -461,7 +463,7 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[
             {
-                "real_hardware": LaunchConfiguration("real_hardware"),
+                "real_hardware": LaunchConfiguration("real_camera"),
             }
         ],
     )
@@ -475,7 +477,7 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[
             {
-                "real_hardware": LaunchConfiguration("real_hardware"),
+                "real_hardware": LaunchConfiguration("real_camera"),
             }
         ],
     )
