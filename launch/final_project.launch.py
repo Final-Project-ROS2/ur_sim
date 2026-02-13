@@ -503,5 +503,15 @@ def generate_launch_description():
         emulate_tty=True
     )
     ld.add_action(find_object_grasp_node)
-    
+
+    depth_camera_publisher_node = Node(
+        package='depth_camera',
+        executable='intel_pub',
+        name='depth_camera_publisher_node',
+        output='screen',
+        emulate_tty=True,
+        condition=IfCondition(LaunchConfiguration("real_camera")),
+    )
+    ld.add_action(depth_camera_publisher_node)
+
     return ld
