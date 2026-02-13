@@ -66,6 +66,7 @@ def generate_launch_description():
     # PDDL initial state args
     is_home_arg = DeclareLaunchArgument("is_home", default_value="true")
     is_ready_arg = DeclareLaunchArgument("is_ready", default_value="false")
+    is_handover_arg = DeclareLaunchArgument("is_handover", default_value="false")
     gripper_is_open_arg = DeclareLaunchArgument("gripper_is_open", default_value="true")
 
     # Add declare statements
@@ -81,6 +82,7 @@ def generate_launch_description():
     ld.add_action(confirm)
     ld.add_action(is_home_arg)
     ld.add_action(is_ready_arg)
+    ld.add_action(is_handover_arg)
     ld.add_action(gripper_is_open_arg)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
 
@@ -399,6 +401,7 @@ def generate_launch_description():
         parameters=[{
             "is_home": LaunchConfiguration("is_home"),
             "is_ready": LaunchConfiguration("is_ready"),
+            "is_handover": LaunchConfiguration("is_handover"),
             "gripper_is_open": LaunchConfiguration("gripper_is_open"),
         }]
     )
