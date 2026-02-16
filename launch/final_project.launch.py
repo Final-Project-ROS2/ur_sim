@@ -483,8 +483,19 @@ def generate_launch_description():
                 "real_hardware": LaunchConfiguration("real_camera"),
             }
         ],
+        condition=UnlessCondition(LaunchConfiguration("real_camera")),
     )
     ld.add_action(pixel_to_real_node)
+
+    pixel_to_real_world_node = Node(
+        package='vision',
+        executable='pixel_to_real_world_service',
+        name='pixel_to_real_world_node',
+        output='screen',
+        emulate_tty=True,
+        condition=IfCondition(LaunchConfiguration("real_camera")),
+    )
+    ld.add_action(pixel_to_real_world_node)
 
     find_object_node = Node(
         package='vision',
