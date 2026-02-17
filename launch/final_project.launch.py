@@ -50,6 +50,11 @@ def generate_launch_description():
     ))
 
     # --- args ---
+    mode_arg = DeclareLaunchArgument(
+        "mode",
+        default_value="sim",
+        description="Mode: 'sim' (simulation), 'cam' (real camera), 'real' (real hardware)"
+    )
     with_rviz     = DeclareLaunchArgument("with_rviz", default_value="true")
     with_octomap  = DeclareLaunchArgument("with_octomap", default_value="true")  # << NEW
     pddl = DeclareLaunchArgument("pddl", default_value="false")
@@ -59,8 +64,18 @@ def generate_launch_description():
         default_value="false",
         description="If true, use local Ollama LLM instead of Google Gemini."
     )
-    real_hardware = DeclareLaunchArgument("real_hardware", default_value="false")
-    real_camera = DeclareLaunchArgument("real_camera", default_value="false")
+    real_hardware = DeclareLaunchArgument(
+        "real_hardware",
+        default_value=PythonExpression([
+            "'true' if '", LaunchConfiguration("mode"), "' == 'real' else 'false'"
+        ])
+    )
+    real_camera = DeclareLaunchArgument(
+        "real_camera",
+        default_value=PythonExpression([
+            "'true' if '", LaunchConfiguration("mode"), "' in ['cam', 'real'] else 'false'"
+        ])
+    )
     confirm = DeclareLaunchArgument("confirm", default_value="true")
     
     # PDDL initial state args
@@ -73,6 +88,7 @@ def generate_launch_description():
     x_arg = DeclareLaunchArgument("x", default_value="0")
     y_arg = DeclareLaunchArgument("y", default_value="0")
     z_arg = DeclareLaunchArgument("z", default_value="0")
+    ld.add_action(mode_arg)
     ld.add_action(with_rviz); ld.add_action(with_octomap)
     ld.add_action(pddl)
     ld.add_action(real_hardware)
