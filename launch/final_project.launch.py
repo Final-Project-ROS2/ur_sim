@@ -541,4 +541,14 @@ def generate_launch_description():
     )
     ld.add_action(depth_camera_publisher_node)
 
+    real_cam_info_publisher = Node(
+        package='vision',
+        executable='real_cam_info',
+        name='real_cam_info_publisher_node',
+        output='screen',
+        emulate_tty=True,
+        condition=IfCondition(LaunchConfiguration("real_hardware"))
+    )
+    ld.add_action(real_cam_info_publisher)
+
     return ld
