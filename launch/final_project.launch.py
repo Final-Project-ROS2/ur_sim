@@ -520,7 +520,7 @@ def generate_launch_description():
         executable='find_object_service',
         name='find_object_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
         parameters=[
             {
                 "tcp_offset": LaunchConfiguration("tcp_offset"),
