@@ -564,6 +564,11 @@ def generate_launch_description():
         output='screen',
         emulate_tty=True,
         condition=IfCondition(LaunchConfiguration("real_camera")),
+        parameters=[
+            {
+                "logging": False,
+            }
+        ]
     )
     ld.add_action(depth_camera_publisher_node)
 
