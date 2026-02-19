@@ -77,6 +77,7 @@ def generate_launch_description():
         ])
     )
     confirm = DeclareLaunchArgument("confirm", default_value="true")
+    tcp_offset = DeclareLaunchArgument("tcp_offset", default_value="false")
     
     # PDDL initial state args
     is_home_arg = DeclareLaunchArgument("is_home", default_value="true")
@@ -93,6 +94,7 @@ def generate_launch_description():
     ld.add_action(pddl)
     ld.add_action(real_hardware)
     ld.add_action(real_camera)
+    ld.add_action(tcp_offset)
     ld.add_action(world_arg)
     ld.add_action(use_ollama)
     ld.add_action(confirm)
@@ -518,7 +520,12 @@ def generate_launch_description():
         executable='find_object_service',
         name='find_object_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "tcp_offset": LaunchConfiguration("tcp_offset"),
+            }
+        ]
     )
     ld.add_action(find_object_node)
 
@@ -527,7 +534,12 @@ def generate_launch_description():
         executable='find_object_grasp_service',
         name='find_object_grasp_node',
         output='screen',
-        emulate_tty=True
+        emulate_tty=True,
+        parameters=[
+            {
+                "tcp_offset": LaunchConfiguration("tcp_offset"),
+            }
+        ]
     )
     ld.add_action(find_object_grasp_node)
 
