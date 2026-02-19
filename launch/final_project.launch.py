@@ -490,6 +490,20 @@ def generate_launch_description():
     )
     ld.add_action(scene_understanding_node)
 
+    vqa_action_server_node = Node(
+        package='vision',
+        executable='vqa_action_server',
+        name='vqa_action_server_node',
+        output='screen',
+        emulate_tty=True,
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_camera"),
+            }
+        ],
+    )
+    ld.add_action(vqa_action_server_node)
+
     pixel_to_real_node = Node(
         package='vision',
         executable='pixel_to_real_service',
