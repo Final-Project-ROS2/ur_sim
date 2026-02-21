@@ -380,7 +380,6 @@ def generate_launch_description():
                 ),
                 "real_hardware": LaunchConfiguration("real_hardware"),
                 "use_ollama": LaunchConfiguration("use_ollama"),
-                "ollama_model": LaunchConfiguration("ollama_model"),
             }
         ],
     )
