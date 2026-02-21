@@ -558,8 +558,8 @@ def generate_launch_description():
         OnProcessStart(
             target_action=vqa_action_server_node_real,
             on_start=[
-                TimerAction(period=1.0, actions=[high_level_planner_node]),
-                TimerAction(period=1.0, actions=[high_level_planner_pddl_node]),
+                TimerAction(period=10.0, actions=[high_level_planner_node]),
+                TimerAction(period=10.0, actions=[high_level_planner_pddl_node]),
             ],
         ),
         condition=IfCondition(LaunchConfiguration("real_camera")),
@@ -569,8 +569,8 @@ def generate_launch_description():
         OnProcessStart(
             target_action=vqa_action_server_node_sim,
             on_start=[
-                TimerAction(period=1.0, actions=[high_level_planner_node]),
-                TimerAction(period=1.0, actions=[high_level_planner_pddl_node]),
+                TimerAction(period=10.0, actions=[high_level_planner_node]),
+                TimerAction(period=10.0, actions=[high_level_planner_pddl_node]),
             ],
         ),
         condition=UnlessCondition(LaunchConfiguration("real_camera")),
