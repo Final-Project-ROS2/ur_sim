@@ -495,12 +495,28 @@ def generate_launch_description():
     )
     ld.add_action(scene_understanding_node)
 
-    vqa_action_server_node = Node(
+    vqa_action_server_node_sim = Node(
         package='vision',
         executable='vqa_action_server',
         name='vqa_action_server_node',
         output='screen',
         emulate_tty=True,
+        condition=UnlessCondition(LaunchConfiguration("real_camera")),
+        parameters=[
+            {
+                "real_hardware": LaunchConfiguration("real_camera"),
+                "image_reliability": "reliable",
+            }
+        ],
+    )
+
+    vqa_action_server_node_real = Node(
+        package='vision',
+        executable='vqa_action_server',
+        name='vqa_action_server_node',
+        output='screen',
+        emulate_tty=True,
+        condition=IfCondition(LaunchConfiguration("real_camera")),
         parameters=[
             {
                 "real_hardware": LaunchConfiguration("real_camera"),
@@ -527,26 +543,37 @@ def generate_launch_description():
     ld.add_action(RegisterEventHandler(
         OnProcessStart(
             target_action=depth_camera_publisher_node,
-            on_start=[TimerAction(period=2.0, actions=[vqa_action_server_node])],
-        ),
-        condition=IfCondition(LaunchConfiguration("real_camera")),
+            on_start=[TimerAction(period=2.0, actions=[vqa_action_server_node_real])],
+        )
     ))
 
     ld.add_action(TimerAction(
-        period=3.0,
-        actions=[vqa_action_server_node],
+        period=15.0,
+        actions=[vqa_action_server_node_sim],
         condition=UnlessCondition(LaunchConfiguration("real_camera")),
     ))
 
     # Launch high-level planners only after VQA is up.
     ld.add_action(RegisterEventHandler(
         OnProcessStart(
-            target_action=vqa_action_server_node,
+            target_action=vqa_action_server_node_real,
             on_start=[
                 TimerAction(period=1.0, actions=[high_level_planner_node]),
                 TimerAction(period=1.0, actions=[high_level_planner_pddl_node]),
             ],
-        )
+        ),
+        condition=IfCondition(LaunchConfiguration("real_camera")),
+    ))
+
+    ld.add_action(RegisterEventHandler(
+        OnProcessStart(
+            target_action=vqa_action_server_node_sim,
+            on_start=[
+                TimerAction(period=1.0, actions=[high_level_planner_node]),
+                TimerAction(period=1.0, actions=[high_level_planner_pddl_node]),
+            ],
+        ),
+        condition=UnlessCondition(LaunchConfiguration("real_camera")),
     ))
 
     pixel_to_real_node = Node(
