@@ -64,6 +64,10 @@ def generate_launch_description():
         default_value="false",
         description="If true, use local Ollama LLM instead of Google Gemini."
     )
+    ollama_model = DeclareLaunchArgument(
+        "ollama_model",
+        default_value="qwen3:8b"
+    )
     real_hardware = DeclareLaunchArgument(
         "real_hardware",
         default_value=PythonExpression([
@@ -97,6 +101,7 @@ def generate_launch_description():
     ld.add_action(tcp_offset)
     ld.add_action(world_arg)
     ld.add_action(use_ollama)
+    ld.add_action(ollama_model)
     ld.add_action(confirm)
     ld.add_action(is_home_arg)
     ld.add_action(is_ready_arg)
@@ -375,6 +380,7 @@ def generate_launch_description():
                 ),
                 "real_hardware": LaunchConfiguration("real_hardware"),
                 "use_ollama": LaunchConfiguration("use_ollama"),
+                "ollama_model": LaunchConfiguration("ollama_model"),
             }
         ],
     )
@@ -391,9 +397,9 @@ def generate_launch_description():
             "use_ollama": LaunchConfiguration("use_ollama"),
             "real_hardware": LaunchConfiguration("real_hardware"),
             "confirm": LaunchConfiguration("confirm"),
+            "ollama_model": LaunchConfiguration("ollama_model"),
         }]
     )
-    ld.add_action(high_level_planner_node)
 
     high_level_planner_pddl_node = Node(
         package='high_level_pddl_planner',
@@ -408,7 +414,6 @@ def generate_launch_description():
             "confirm": LaunchConfiguration("confirm"),
         }]
     )
-    ld.add_action(high_level_planner_pddl_node)
 
     pddl_state_node = Node(
         package='high_level_pddl_planner',
@@ -502,7 +507,47 @@ def generate_launch_description():
             }
         ],
     )
-    ld.add_action(vqa_action_server_node)
+
+    depth_camera_publisher_node = Node(
+        package='depth_camera',
+        executable='intel_pub',
+        name='depth_camera_publisher_node',
+        output='screen',
+        emulate_tty=True,
+        condition=IfCondition(LaunchConfiguration("real_camera")),
+        parameters=[
+            {
+                "logging": False,
+            }
+        ]
+    )
+    ld.add_action(depth_camera_publisher_node)
+
+    # Start VQA after camera begins publishing when using a real camera; otherwise delay slightly.
+    ld.add_action(RegisterEventHandler(
+        OnProcessStart(
+            target_action=depth_camera_publisher_node,
+            on_start=[TimerAction(period=2.0, actions=[vqa_action_server_node])],
+        ),
+        condition=IfCondition(LaunchConfiguration("real_camera")),
+    ))
+
+    ld.add_action(TimerAction(
+        period=3.0,
+        actions=[vqa_action_server_node],
+        condition=UnlessCondition(LaunchConfiguration("real_camera")),
+    ))
+
+    # Launch high-level planners only after VQA is up.
+    ld.add_action(RegisterEventHandler(
+        OnProcessStart(
+            target_action=vqa_action_server_node,
+            on_start=[
+                TimerAction(period=1.0, actions=[high_level_planner_node]),
+                TimerAction(period=1.0, actions=[high_level_planner_pddl_node]),
+            ],
+        )
+    ))
 
     pixel_to_real_node = Node(
         package='vision',
@@ -556,21 +601,6 @@ def generate_launch_description():
         ]
     )
     ld.add_action(find_object_grasp_node)
-
-    depth_camera_publisher_node = Node(
-        package='depth_camera',
-        executable='intel_pub',
-        name='depth_camera_publisher_node',
-        output='screen',
-        emulate_tty=True,
-        condition=IfCondition(LaunchConfiguration("real_camera")),
-        parameters=[
-            {
-                "logging": False,
-            }
-        ]
-    )
-    ld.add_action(depth_camera_publisher_node)
 
     real_cam_info_publisher = Node(
         package='vision',
