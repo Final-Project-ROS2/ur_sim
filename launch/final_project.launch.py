@@ -1,6 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import (
-    DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler,
+    DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, RegisterEventHandler,
     SetEnvironmentVariable, TimerAction
 )
 from launch.conditions import IfCondition, UnlessCondition
@@ -58,6 +58,16 @@ def generate_launch_description():
     with_rviz     = DeclareLaunchArgument("with_rviz", default_value="true")
     with_octomap  = DeclareLaunchArgument("with_octomap", default_value="true")  # << NEW
     pddl = DeclareLaunchArgument("pddl", default_value="false")
+    disable_unused_vision = DeclareLaunchArgument(
+        "disable_unused_vision",
+        default_value="false",
+        description="If true, do not launch graspnet_detector and scene_understanding."
+    )
+    disable_node = DeclareLaunchArgument(
+        "disable_node",
+        default_value="",
+        description="Comma-separated executable names to skip launching."
+    )
     world_arg = DeclareLaunchArgument("world_file", default_value="test_world_find_object.world")
     use_ollama = DeclareLaunchArgument(
         "use_ollama",
@@ -96,6 +106,8 @@ def generate_launch_description():
     ld.add_action(mode_arg)
     ld.add_action(with_rviz); ld.add_action(with_octomap)
     ld.add_action(pddl)
+    ld.add_action(disable_unused_vision)
+    ld.add_action(disable_node)
     ld.add_action(real_hardware)
     ld.add_action(real_camera)
     ld.add_action(tcp_offset)
@@ -108,6 +120,24 @@ def generate_launch_description():
     ld.add_action(is_handover_arg)
     ld.add_action(gripper_is_open_arg)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
+
+    def node_enabled_expr(executable_name, extra_disable_flag=None):
+        expr_parts = [
+            "not (",
+            "'", executable_name, "' in [n.strip() for n in '",
+            LaunchConfiguration("disable_node"),
+            "'.split(',') if n.strip()]",
+        ]
+        if extra_disable_flag:
+            expr_parts += [" or '", LaunchConfiguration(extra_disable_flag), "' == 'true'"]
+        expr_parts += [")"]
+        return PythonExpression(expr_parts)
+
+    def maybe_launch(action, executable_name, extra_disable_flag=None):
+        return GroupAction(
+            actions=[action],
+            condition=IfCondition(node_enabled_expr(executable_name, extra_disable_flag))
+        )
 
     # --- MoveIt config ---
     joint_controllers_file = os.path.join(uryt_share, "config", "ur5_controllers_gripper.yaml")
@@ -155,7 +185,7 @@ def generate_launch_description():
         output="screen",
         condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
-    ld.add_action(robot_state_publisher)
+    ld.add_action(maybe_launch(robot_state_publisher, "robot_state_publisher"))
 
     # --- Spawn ---
     spawn = Node(
@@ -169,7 +199,12 @@ def generate_launch_description():
             "-z", LaunchConfiguration("z"),
         ],
         output="screen",
-        condition=UnlessCondition(LaunchConfiguration("real_hardware"))
+        condition=IfCondition(
+            AndSubstitution(
+                NotEqualsSubstitution(LaunchConfiguration("real_hardware"), "true"),
+                node_enabled_expr("spawn_entity.py")
+            )
+        )
     )
     ld.add_action(TimerAction(period=3.0, actions=[spawn]))
 
@@ -188,8 +223,11 @@ def generate_launch_description():
 
     ld.add_action(RegisterEventHandler(
         OnProcessStart(target_action=spawn, on_start=[
-            TimerAction(period=2.0, actions=[jsb]),
-            TimerAction(period=3.0, actions=[arm, grip]),
+            TimerAction(period=2.0, actions=[maybe_launch(jsb, "spawner")]),
+            TimerAction(period=3.0, actions=[
+                maybe_launch(arm, "spawner"),
+                maybe_launch(grip, "spawner")
+            ]),
         ])
     ))
 
@@ -212,7 +250,7 @@ def generate_launch_description():
             )
         )
     )
-    ld.add_action(rviz)
+    ld.add_action(maybe_launch(rviz, "rviz2"))
 
     mg_params = moveit_config.to_dict()
     mg_params.update({"use_sim_time": True})
@@ -229,7 +267,7 @@ def generate_launch_description():
         condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
 
-    ld.add_action(move_group_no_octomap)
+    ld.add_action(maybe_launch(move_group_no_octomap, "move_group"))
 
     gripper_wrapper = Node(
             package='gripper_helper',
@@ -239,7 +277,7 @@ def generate_launch_description():
             emulate_tty=True,
             condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
-    ld.add_action(gripper_wrapper)
+    ld.add_action(maybe_launch(gripper_wrapper, "wrapper_gripper_node"))
 
     contact_listener = Node(
             package='gripper_helper',
@@ -249,7 +287,7 @@ def generate_launch_description():
             emulate_tty=True,
             condition=UnlessCondition(LaunchConfiguration("real_hardware"))
     )
-    ld.add_action(contact_listener)
+    ld.add_action(maybe_launch(contact_listener, "contact_listener"))
 
     # --- Real Hardware Launch Nodes ---
 
@@ -297,7 +335,7 @@ def generate_launch_description():
         emulate_tty=True,
         condition=IfCondition(LaunchConfiguration("real_hardware")),
     )
-    ld.add_action(gripper_service_node)
+    ld.add_action(maybe_launch(gripper_service_node, "gripper_service_server"))
 
     moveit_pose_action_server_node = Node(
         package='low_level_planner_executor',
@@ -314,7 +352,7 @@ def generate_launch_description():
             }
         ],
     )
-    ld.add_action(moveit_pose_action_server_node)
+    ld.add_action(maybe_launch(moveit_pose_action_server_node, "moveit_pose_action_server"))
 
     low_level_planner_executor_node = Node(
         package='low_level_planner_executor',
@@ -331,7 +369,7 @@ def generate_launch_description():
             }
         ],
     )
-    ld.add_action(low_level_planner_executor_node)
+    ld.add_action(maybe_launch(low_level_planner_executor_node, "low_level_planner_executor"))
 
     cartesian_path_action_server_node = Node(
         package='low_level_planner_executor',
@@ -348,7 +386,7 @@ def generate_launch_description():
             }
         ],
     )
-    ld.add_action(cartesian_path_action_server_node)
+    ld.add_action(maybe_launch(cartesian_path_action_server_node, "cartesian_path_action_server"))
 
     cartesian_relative_action_server_node = Node(
         package='low_level_planner_executor',
@@ -365,7 +403,7 @@ def generate_launch_description():
             }
         ],
     )
-    ld.add_action(cartesian_relative_action_server_node)
+    ld.add_action(maybe_launch(cartesian_relative_action_server_node, "cartesian_relative_action_server"))
 
     medium_level_planner_node = Node(
         package='medium_level_planner',
@@ -383,7 +421,7 @@ def generate_launch_description():
             }
         ],
     )
-    ld.add_action(medium_level_planner_node)
+    ld.add_action(maybe_launch(medium_level_planner_node, "medium_level_planner"))
 
     high_level_planner_node = Node(
         package='high_level_planner',
@@ -427,7 +465,7 @@ def generate_launch_description():
             "gripper_is_open": LaunchConfiguration("gripper_is_open"),
         }]
     )
-    ld.add_action(pddl_state_node)
+    ld.add_action(maybe_launch(pddl_state_node, "pddl_state_node"))
 
     plan_complex_cartesian_steps_node = Node(
         package='complex_low_level_planner',
@@ -436,7 +474,7 @@ def generate_launch_description():
         output='screen',
         emulate_tty=True,
     )
-    ld.add_action(plan_complex_cartesian_steps_node)
+    ld.add_action(maybe_launch(plan_complex_cartesian_steps_node, "plan_complex_cartesian_steps_node"))
 
     simple_sam_detector_node = Node(
         package='vision',
@@ -450,7 +488,7 @@ def generate_launch_description():
             }
         ],
     )
-    ld.add_action(simple_sam_detector_node)
+    ld.add_action(maybe_launch(simple_sam_detector_node, "simple_sam_detector"))
 
     clip_classifier_node = Node(
         package='vision',
@@ -464,7 +502,7 @@ def generate_launch_description():
             }
         ],
     )
-    ld.add_action(clip_classifier_node)
+    ld.add_action(maybe_launch(clip_classifier_node, "clip_classifier"))
 
     graspnet_detector_node = Node(
         package='vision',
@@ -478,7 +516,7 @@ def generate_launch_description():
             }
         ],
     )
-    ld.add_action(graspnet_detector_node)
+    ld.add_action(maybe_launch(graspnet_detector_node, "graspnet_detector", "disable_unused_vision"))
 
     scene_understanding_node = Node(
         package='vision',
@@ -492,7 +530,7 @@ def generate_launch_description():
             }
         ],
     )
-    ld.add_action(scene_understanding_node)
+    ld.add_action(maybe_launch(scene_understanding_node, "scene_understanding", "disable_unused_vision"))
 
     vqa_action_server_node_sim = Node(
         package='vision',
@@ -500,7 +538,12 @@ def generate_launch_description():
         name='vqa_action_server_node',
         output='screen',
         emulate_tty=True,
-        condition=UnlessCondition(LaunchConfiguration("real_camera")),
+        condition=IfCondition(
+            AndSubstitution(
+                NotEqualsSubstitution(LaunchConfiguration("real_camera"), "true"),
+                node_enabled_expr("vqa_action_server")
+            )
+        ),
         parameters=[
             {
                 "real_hardware": LaunchConfiguration("real_camera"),
@@ -515,7 +558,12 @@ def generate_launch_description():
         name='vqa_action_server_node',
         output='screen',
         emulate_tty=True,
-        condition=IfCondition(LaunchConfiguration("real_camera")),
+        condition=IfCondition(
+            AndSubstitution(
+                LaunchConfiguration("real_camera"),
+                node_enabled_expr("vqa_action_server")
+            )
+        ),
         parameters=[
             {
                 "real_hardware": LaunchConfiguration("real_camera"),
@@ -529,7 +577,12 @@ def generate_launch_description():
         name='depth_camera_publisher_node',
         output='screen',
         emulate_tty=True,
-        condition=IfCondition(LaunchConfiguration("real_camera")),
+        condition=IfCondition(
+            AndSubstitution(
+                LaunchConfiguration("real_camera"),
+                node_enabled_expr("intel_pub")
+            )
+        ),
         parameters=[
             {
                 "logging": False,
@@ -557,8 +610,12 @@ def generate_launch_description():
         OnProcessStart(
             target_action=vqa_action_server_node_real,
             on_start=[
-                TimerAction(period=10.0, actions=[high_level_planner_node]),
-                TimerAction(period=10.0, actions=[high_level_planner_pddl_node]),
+                TimerAction(period=10.0, actions=[
+                    maybe_launch(high_level_planner_node, "high_level_planner")
+                ]),
+                TimerAction(period=10.0, actions=[
+                    maybe_launch(high_level_planner_pddl_node, "pddl_planner_node")
+                ]),
             ],
         ),
         condition=IfCondition(LaunchConfiguration("real_camera")),
@@ -568,8 +625,12 @@ def generate_launch_description():
         OnProcessStart(
             target_action=vqa_action_server_node_sim,
             on_start=[
-                TimerAction(period=10.0, actions=[high_level_planner_node]),
-                TimerAction(period=10.0, actions=[high_level_planner_pddl_node]),
+                TimerAction(period=10.0, actions=[
+                    maybe_launch(high_level_planner_node, "high_level_planner")
+                ]),
+                TimerAction(period=10.0, actions=[
+                    maybe_launch(high_level_planner_pddl_node, "pddl_planner_node")
+                ]),
             ],
         ),
         condition=UnlessCondition(LaunchConfiguration("real_camera")),
@@ -588,7 +649,7 @@ def generate_launch_description():
         ],
         condition=UnlessCondition(LaunchConfiguration("real_camera")),
     )
-    ld.add_action(pixel_to_real_node)
+    ld.add_action(maybe_launch(pixel_to_real_node, "pixel_to_real_service"))
 
     pixel_to_real_world_node = Node(
         package='vision',
@@ -598,7 +659,7 @@ def generate_launch_description():
         emulate_tty=True,
         condition=IfCondition(LaunchConfiguration("real_camera")),
     )
-    ld.add_action(pixel_to_real_world_node)
+    ld.add_action(maybe_launch(pixel_to_real_world_node, "pixel_to_real_world_service"))
 
     find_object_node = Node(
         package='vision',
@@ -612,7 +673,7 @@ def generate_launch_description():
             }
         ]
     )
-    ld.add_action(find_object_node)
+    ld.add_action(maybe_launch(find_object_node, "find_object_service"))
 
     find_object_grasp_node = Node(
         package='vision',
@@ -626,7 +687,7 @@ def generate_launch_description():
             }
         ]
     )
-    ld.add_action(find_object_grasp_node)
+    ld.add_action(maybe_launch(find_object_grasp_node, "find_object_grasp_service"))
 
     real_cam_info_publisher = Node(
         package='vision',
@@ -636,6 +697,6 @@ def generate_launch_description():
         emulate_tty=True,
         condition=IfCondition(LaunchConfiguration("real_hardware"))
     )
-    ld.add_action(real_cam_info_publisher)
+    ld.add_action(maybe_launch(real_cam_info_publisher, "real_cam_info"))
 
     return ld
