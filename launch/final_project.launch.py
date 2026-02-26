@@ -689,6 +689,15 @@ def generate_launch_description():
     )
     ld.add_action(maybe_launch(find_object_grasp_node, "find_object_grasp_service"))
 
+    find_boundary_service_node = Node(
+        package='vision',
+        executable='find_boundary_service',
+        name='find_boundary_service_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(maybe_launch(find_boundary_service_node, "find_boundary_service"))
+
     real_cam_info_publisher = Node(
         package='vision',
         executable='real_cam_info',
