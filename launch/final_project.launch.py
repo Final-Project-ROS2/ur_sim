@@ -698,14 +698,4 @@ def generate_launch_description():
     )
     ld.add_action(maybe_launch(find_boundary_service_node, "find_boundary_service"))
 
-    real_cam_info_publisher = Node(
-        package='vision',
-        executable='real_cam_info',
-        name='real_cam_info_publisher_node',
-        output='screen',
-        emulate_tty=True,
-        condition=IfCondition(LaunchConfiguration("real_hardware"))
-    )
-    ld.add_action(maybe_launch(real_cam_info_publisher, "real_cam_info"))
-
     return ld
