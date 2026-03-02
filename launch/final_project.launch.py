@@ -13,12 +13,43 @@ from launch.substitutions import PathJoinSubstitution
 from ament_index_python.packages import get_package_share_directory
 from moveit_configs_utils import MoveItConfigsBuilder
 import os
+import json
 
 def generate_launch_description():
     ld = LaunchDescription()
 
+    # --- Declare launch_config_file argument first ---
+    launch_config_file_arg = DeclareLaunchArgument(
+        "launch_config_file",
+        default_value="",
+        description="JSON config file name in launch/config/ directory (e.g., 'launch_config.json'). Leave empty to use default values."
+    )
+    ld.add_action(launch_config_file_arg)
+
+    # --- Load config from JSON file if specified ---
+    import sys
+    config = {}
+    # Check if launch_config_file was provided via command line
+    config_file_name = None
+    for arg in sys.argv:
+        if arg.startswith("launch_config_file:="):
+            config_file_name = arg.split(":=", 1)[1]
+            break
+    
+    if config_file_name:
+        config_file = os.path.expanduser(f"~/final_project_ws/src/ur_yt_sim/launch/config/{config_file_name}")
+        if os.path.exists(config_file):
+            try:
+                with open(config_file, 'r') as f:
+                    config = json.load(f)
+                    print(f"Loaded launch configuration from: {config_file}")
+            except Exception as e:
+                print(f"Warning: Could not load launch config file '{config_file}': {e}")
+        else:
+            print(f"Warning: Launch config file not found: {config_file}")
+
     # --- share dirs ---
-    uryt_share     = get_package_share_directory("ur_yt_sim")
+    uryt_share = get_package_share_directory("ur_yt_sim")
     robotiq_share  = get_package_share_directory("robotiq_description")
     ur_share       = get_package_share_directory("ur_description")
     gazebo_ros_dir = get_package_share_directory("gazebo_ros")
@@ -52,31 +83,31 @@ def generate_launch_description():
     # --- args ---
     mode_arg = DeclareLaunchArgument(
         "mode",
-        default_value="sim",
+        default_value=config.get("mode", "sim"),
         description="Mode: 'sim' (simulation), 'cam' (real camera), 'real' (real hardware)"
     )
-    with_rviz     = DeclareLaunchArgument("with_rviz", default_value="true")
-    with_octomap  = DeclareLaunchArgument("with_octomap", default_value="true")  # << NEW
-    pddl = DeclareLaunchArgument("pddl", default_value="false")
+    with_rviz     = DeclareLaunchArgument("with_rviz", default_value=config.get("with_rviz", "true"))
+    with_octomap  = DeclareLaunchArgument("with_octomap", default_value=config.get("with_octomap", "true"))  # << NEW
+    pddl = DeclareLaunchArgument("pddl", default_value=config.get("pddl", "false"))
     disable_unused_vision = DeclareLaunchArgument(
         "disable_unused_vision",
-        default_value="false",
+        default_value=config.get("disable_unused_vision", "false"),
         description="If true, do not launch graspnet_detector and scene_understanding."
     )
     disable_node = DeclareLaunchArgument(
         "disable_node",
-        default_value="",
+        default_value=config.get("disable_node", ""),
         description="Comma-separated executable names to skip launching."
     )
-    world_arg = DeclareLaunchArgument("world_file", default_value="test_world_find_object.world")
+    world_arg = DeclareLaunchArgument("world_file", default_value=config.get("world_file", "test_world_find_object.world"))
     use_ollama = DeclareLaunchArgument(
         "use_ollama",
-        default_value="false",
+        default_value=config.get("use_ollama", "false"),
         description="If true, use local Ollama LLM instead of Google Gemini."
     )
     ollama_model = DeclareLaunchArgument(
         "ollama_model",
-        default_value="qwen3:8b"
+        default_value=config.get("ollama_model", "qwen3:8b")
     )
     real_hardware = DeclareLaunchArgument(
         "real_hardware",
@@ -90,19 +121,19 @@ def generate_launch_description():
             "'true' if '", LaunchConfiguration("mode"), "' in ['cam', 'real'] else 'false'"
         ])
     )
-    confirm = DeclareLaunchArgument("confirm", default_value="true")
-    tcp_offset = DeclareLaunchArgument("tcp_offset", default_value="false")
+    confirm = DeclareLaunchArgument("confirm", default_value=config.get("confirm", "true"))
+    tcp_offset = DeclareLaunchArgument("tcp_offset", default_value=config.get("tcp_offset", "false"))
     
     # PDDL initial state args
-    is_home_arg = DeclareLaunchArgument("is_home", default_value="true")
-    is_ready_arg = DeclareLaunchArgument("is_ready", default_value="false")
-    is_handover_arg = DeclareLaunchArgument("is_handover", default_value="false")
-    gripper_is_open_arg = DeclareLaunchArgument("gripper_is_open", default_value="false")
+    is_home_arg = DeclareLaunchArgument("is_home", default_value=config.get("is_home", "true"))
+    is_ready_arg = DeclareLaunchArgument("is_ready", default_value=config.get("is_ready", "false"))
+    is_handover_arg = DeclareLaunchArgument("is_handover", default_value=config.get("is_handover", "false"))
+    gripper_is_open_arg = DeclareLaunchArgument("gripper_is_open", default_value=config.get("gripper_is_open", "false"))
 
     # Add declare statements
-    x_arg = DeclareLaunchArgument("x", default_value="0")
-    y_arg = DeclareLaunchArgument("y", default_value="0")
-    z_arg = DeclareLaunchArgument("z", default_value="0")
+    x_arg = DeclareLaunchArgument("x", default_value=config.get("x", "0"))
+    y_arg = DeclareLaunchArgument("y", default_value=config.get("y", "0"))
+    z_arg = DeclareLaunchArgument("z", default_value=config.get("z", "0"))
     ld.add_action(mode_arg)
     ld.add_action(with_rviz); ld.add_action(with_octomap)
     ld.add_action(pddl)

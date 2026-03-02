@@ -1,0 +1,8 @@
+{
+    "mode": "sim",
+    "tcp_offset": "true",
+    "pddl": "true",
+    "use_ollama": "true",
+    "disable_node": "pddl_planner_node,medium_level_planner",
+    "disable_unused_vision": "true"
+}
