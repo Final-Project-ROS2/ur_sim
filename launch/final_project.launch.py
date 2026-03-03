@@ -729,4 +729,13 @@ def generate_launch_description():
     )
     ld.add_action(maybe_launch(find_boundary_service_node, "find_boundary_service"))
 
+    obb_angle_service_node = Node(
+        package='vision',
+        executable='obb_angle_service_node',
+        name='obb_angle_service_node',
+        output='screen',
+        emulate_tty=True
+    )
+    ld.add_action(maybe_launch(obb_angle_service_node, "obb_angle_service_node"))
+
     return ld
