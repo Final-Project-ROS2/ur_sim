@@ -107,7 +107,7 @@ def generate_launch_description():
     )
     ollama_model = DeclareLaunchArgument(
         "ollama_model",
-        default_value=config.get("ollama_model", "qwen3:8b")
+        default_value=config.get("ollama_model", "gpt-oss:20b")
     )
     real_hardware = DeclareLaunchArgument(
         "real_hardware",
