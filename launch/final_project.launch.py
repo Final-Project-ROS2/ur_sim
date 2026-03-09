@@ -382,6 +382,7 @@ def generate_launch_description():
                 "real_hardware": LaunchConfiguration("real_hardware"),
             }
         ],
+        condition=UnlessCondition(LaunchConfiguration("real_hardware")),
     )
     ld.add_action(maybe_launch(moveit_pose_action_server_node, "moveit_pose_action_server"))
 
@@ -399,6 +400,7 @@ def generate_launch_description():
                 "real_hardware": LaunchConfiguration("real_hardware"),
             }
         ],
+        condition=UnlessCondition(LaunchConfiguration("real_hardware")),
     )
     ld.add_action(maybe_launch(low_level_planner_executor_node, "low_level_planner_executor"))
 
@@ -416,6 +418,7 @@ def generate_launch_description():
                 "real_hardware": LaunchConfiguration("real_hardware"),
             }
         ],
+        condition=UnlessCondition(LaunchConfiguration("real_hardware")),
     )
     ld.add_action(maybe_launch(cartesian_path_action_server_node, "cartesian_path_action_server"))
 
@@ -433,6 +436,7 @@ def generate_launch_description():
                 "real_hardware": LaunchConfiguration("real_hardware"),
             }
         ],
+        condition=UnlessCondition(LaunchConfiguration("real_hardware")),
     )
     ld.add_action(maybe_launch(cartesian_relative_action_server_node, "cartesian_relative_action_server"))
 
@@ -497,6 +501,16 @@ def generate_launch_description():
         }]
     )
     ld.add_action(maybe_launch(pddl_state_node, "pddl_state_node"))
+
+    real_low_level_planner_executor_node = Node(
+        package='real_low_level_planner_executor',
+        executable='real_low_level_planner_executor_node',
+        name='real_low_level_planner_executor_node',
+        output='screen',
+        emulate_tty=True,
+        condition=IfCondition(LaunchConfiguration("real_hardware")),
+    )
+    ld.add_action(maybe_launch(real_low_level_planner_executor_node, "real_low_level_planner_executor_node"))
 
     plan_complex_cartesian_steps_node = Node(
         package='complex_low_level_planner',
