@@ -91,7 +91,7 @@ def generate_launch_description():
     pddl = DeclareLaunchArgument("pddl", default_value=config.get("pddl", "false"))
     disable_unused_vision = DeclareLaunchArgument(
         "disable_unused_vision",
-        default_value=config.get("disable_unused_vision", "false"),
+        default_value=config.get("disable_unused_vision", "true"),
         description="If true, do not launch graspnet_detector and scene_understanding."
     )
     disable_node = DeclareLaunchArgument(

@@ -1,7 +1,4 @@
 {
-    "mode": "real",
-    "tcp_offset": "true",
-    "pddl": "true",
-    "disable_node": "medium_level_planner",
-    "disable_unused_vision": "true"
+    "mode": "sim",
+    "disable_node": "high_level_planner,medium_level_planner"
 }
