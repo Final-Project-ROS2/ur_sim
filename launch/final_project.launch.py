@@ -123,6 +123,8 @@ def generate_launch_description():
     )
     confirm = DeclareLaunchArgument("confirm", default_value=config.get("confirm", "true"))
     tcp_offset = DeclareLaunchArgument("tcp_offset", default_value=config.get("tcp_offset", "false"))
+    static_image = DeclareLaunchArgument("static_image", default_value=config.get("static_image", "false"))
+    image_path = DeclareLaunchArgument("image_path", default_value=config.get("image_path", ""))
     
     # PDDL initial state args
     is_home_arg = DeclareLaunchArgument("is_home", default_value=config.get("is_home", "true"))
@@ -151,6 +153,8 @@ def generate_launch_description():
     ld.add_action(is_handover_arg)
     ld.add_action(gripper_is_open_arg)
     ld.add_action(x_arg); ld.add_action(y_arg); ld.add_action(z_arg)
+    ld.add_action(static_image)
+    ld.add_action(image_path)
 
     def node_enabled_expr(executable_name, extra_disable_flag=None):
         expr_parts = [
@@ -631,6 +635,8 @@ def generate_launch_description():
         parameters=[
             {
                 "logging": False,
+                "static_image": LaunchConfiguration("static_image"),
+                "image_path": LaunchConfiguration("image_path"),
             }
         ]
     )
