@@ -336,7 +336,7 @@ def generate_launch_description():
     ur_driver_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(ur_driver_launch_file),
         launch_arguments={
-            'ur_type': 'ur3e',
+            'ur_type': 'ur7e',
             'robot_ip': '10.10.0.60',
             'kinematics_params_file': os.path.join(os.environ['HOME'], 'my_robot_calibration.yaml')
         }.items(),
@@ -354,7 +354,7 @@ def generate_launch_description():
     ur_moveit_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(ur_moveit_launch_file),
         launch_arguments={
-            'ur_type': 'ur3e',
+            'ur_type': 'ur7e',
             'launch_rviz': 'true',
             'use_sim_time': 'false'
         }.items(),

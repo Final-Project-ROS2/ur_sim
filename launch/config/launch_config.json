@@ -1,4 +1,5 @@
 {
-    "mode": "sim",
-    "disable_node": "high_level_planner,medium_level_planner"
+    "mode": "real",
+    "pddl": "true",
+    "disable_node": "pddl_planner_node,high_level_planner,medium_level_planner"
 }
